@@ -108,17 +108,19 @@ export const leaveGroup = async (req, res) => {
     }
 
     // Kiểm tra user có phải thành viên không
-    const isMember = group.members.some((m) => String(m) === String(userId));
+    const isMember = group.members.some(
+      (m) => String(m) === String(userId)
+    );
     if (!isMember) {
-      return res
-        .status(403)
-        .json({ message: "Bạn không phải thành viên nhóm" });
+      return res.status(403).json({ message: "Bạn không phải thành viên nhóm" });
     }
 
     const isAdmin = String(group.admin) === String(userId);
-
+    
     // Xóa user khỏi members
-    group.members = group.members.filter((m) => String(m) !== String(userId));
+    group.members = group.members.filter(
+      (m) => String(m) !== String(userId)
+    );
 
     // Nếu user rời là admin
     if (isAdmin) {
@@ -130,9 +132,8 @@ export const leaveGroup = async (req, res) => {
           // Emit cho user vừa rời
           io.to(String(userId)).emit("leftGroup", { groupId: id });
         }
-        return res.status(200).json({
-          message:
-            "Đã rời nhóm thành công. Nhóm đã được xóa vì không còn thành viên.",
+        return res.status(200).json({ 
+          message: "Đã rời nhóm thành công. Nhóm đã được xóa vì không còn thành viên." 
         });
       } else {
         // Nếu còn thành viên khác, chuyển quyền admin cho thành viên đầu tiên

@@ -4,15 +4,7 @@ import Group from "../models/Group.js";
 // 📨 Gửi tin nhắn
 export const sendMessage = async (req, res) => {
   try {
-    const {
-      receiverId,
-      content,
-      imgUrl,
-      audioUrl,
-      gifUrl,
-      messageType,
-      groupId,
-    } = req.body;
+    const { receiverId, content, imgUrl, audioUrl, gifUrl, messageType, groupId } = req.body;
     const senderId = req.user._id;
 
     // If groupId provided, validate sender is member
@@ -185,9 +177,9 @@ export const markMessagesAsSeen = async (req, res) => {
       }
     }
 
-    return res.status(200).json({
+    return res.status(200).json({ 
       message: "Đã đánh dấu tin nhắn là đã xem",
-      count: messages.length,
+      count: messages.length 
     });
   } catch (error) {
     console.error("❌ Lỗi đánh dấu tin nhắn đã xem:", error);
@@ -204,7 +196,10 @@ export const getLatestMessages = async (req, res) => {
     // Lấy danh sách bạn bè đã chấp nhận
     const friends = await Friend.find({
       status: "accepted",
-      $or: [{ sender: currentUserId }, { receiver: currentUserId }],
+      $or: [
+        { sender: currentUserId },
+        { receiver: currentUserId },
+      ],
     })
       .populate("sender", "username displayName avatarUrl")
       .populate("receiver", "username displayName avatarUrl");
@@ -217,10 +212,9 @@ export const getLatestMessages = async (req, res) => {
     // Lấy tin nhắn mới nhất cho mỗi friend
     const friendLatestMessages = await Promise.all(
       friends.map(async (friend) => {
-        const friendId =
-          friend.sender._id.toString() === currentUserId.toString()
-            ? friend.receiver._id
-            : friend.sender._id;
+        const friendId = friend.sender._id.toString() === currentUserId.toString()
+          ? friend.receiver._id
+          : friend.sender._id;
 
         const latestMessage = await Message.findOne({
           $or: [
@@ -259,7 +253,10 @@ export const getLatestMessages = async (req, res) => {
     );
 
     // Kết hợp tất cả
-    const allLatestMessages = [...friendLatestMessages, ...groupLatestMessages];
+    const allLatestMessages = [
+      ...friendLatestMessages,
+      ...groupLatestMessages,
+    ];
 
     return res.status(200).json(allLatestMessages);
   } catch (error) {
