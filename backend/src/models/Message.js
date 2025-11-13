@@ -20,23 +20,21 @@ const messageSchema = new mongoose.Schema(
     imgUrl: { type: String, trim: true, default: "" },
     audioUrl: { type: String, trim: true, default: "" },
     gifUrl: { type: String, trim: true, default: "" },
-    messageType: {
-      type: String,
-      enum: ["text", "image", "audio", "gif", "emoji"],
-      default: "text",
+    messageType: { 
+      type: String, 
+      enum: ["text", "image", "audio", "gif", "emoji"], 
+      default: "text" 
     },
-    seenBy: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        seenAt: {
-          type: Date,
-          default: Date.now,
-        },
+    seenBy: [{
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
-    ],
+      seenAt: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
   },
   { timestamps: true }
 );

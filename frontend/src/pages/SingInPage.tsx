@@ -1,6 +1,7 @@
 import { SigninForm } from "@/components/auth/signin-form";
 
 const SignInPage = () => {
+
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
         {/* Animated Background */}
@@ -18,5 +19,6 @@ const SignInPage = () => {
       </div>
     );
   };
+
 
 export default SignInPage;
