@@ -1167,20 +1167,20 @@ export default function ChatArea({
     return (
         <div
             className={`flex-1 flex flex-col ${hasTheme
-                ? "text-gray-900"
-                : isDark
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-50 text-gray-900"
+                    ? "text-gray-900"
+                    : isDark
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-50 text-gray-900"
                 }`}
             style={hasTheme ? getThemeBackgroundStyle() : undefined}
         >
             {/* Header */}
             <div
                 className={`p-4 border-b backdrop-blur-md shadow-sm ${hasTheme
-                    ? ""
-                    : isDark
-                        ? "bg-gray-900/95 border-gray-800/50"
-                        : "bg-white/95 border-gray-200/50"
+                        ? ""
+                        : isDark
+                            ? "bg-gray-900/95 border-gray-800/50"
+                            : "bg-white/95 border-gray-200/50"
                     }`}
                 style={hasTheme ? getThemeHeaderStyle() : undefined}
             >
@@ -1229,10 +1229,10 @@ export default function ChatArea({
                                 <button
                                     onClick={() => (inCall ? endCall() : startCall(false))}
                                     className={`p-2.5 rounded-xl transition-all duration-300 ${inCall
-                                        ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
-                                        : isDark
-                                            ? "hover:bg-gray-800 hover:shadow-md"
-                                            : "hover:bg-gray-100 hover:shadow-md"
+                                            ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
+                                            : isDark
+                                                ? "hover:bg-gray-800 hover:shadow-md"
+                                                : "hover:bg-gray-100 hover:shadow-md"
                                         }`}
                                 >
                                     <Phone className="w-5 h-5" />
@@ -1240,10 +1240,10 @@ export default function ChatArea({
                                 <button
                                     onClick={() => (inCall ? endCall() : startCall(true))}
                                     className={`p-2.5 rounded-xl transition-all duration-300 ${inCall
-                                        ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
-                                        : isDark
-                                            ? "hover:bg-gray-800 hover:shadow-md"
-                                            : "hover:bg-gray-100 hover:shadow-md"
+                                            ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
+                                            : isDark
+                                                ? "hover:bg-gray-800 hover:shadow-md"
+                                                : "hover:bg-gray-100 hover:shadow-md"
                                         }`}
                                 >
                                     <Video className="w-5 h-5" />
@@ -1261,8 +1261,8 @@ export default function ChatArea({
                                         console.log("🔵 After setState, checking in next render...");
                                     }}
                                     className={`p-2.5 rounded-xl transition-all duration-300 ${isDark
-                                        ? "hover:bg-gray-800 hover:shadow-md"
-                                        : "hover:bg-gray-100 hover:shadow-md"
+                                            ? "hover:bg-gray-800 hover:shadow-md"
+                                            : "hover:bg-gray-100 hover:shadow-md"
                                         }`}
                                     title="Tùy chỉnh đoạn chat"
                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
@@ -1275,10 +1275,10 @@ export default function ChatArea({
                                 <button
                                     onClick={() => (inCall ? endCall() : startCall(false))}
                                     className={`p-2.5 rounded-xl transition-all duration-300 ${inCall
-                                        ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
-                                        : isDark
-                                            ? "hover:bg-gray-800 hover:shadow-md"
-                                            : "hover:bg-gray-100 hover:shadow-md"
+                                            ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
+                                            : isDark
+                                                ? "hover:bg-gray-800 hover:shadow-md"
+                                                : "hover:bg-gray-100 hover:shadow-md"
                                         }`}
                                 >
                                     <Phone className="w-5 h-5" />
@@ -1286,10 +1286,10 @@ export default function ChatArea({
                                 <button
                                     onClick={() => (inCall ? endCall() : startCall(true))}
                                     className={`p-2.5 rounded-xl transition-all duration-300 ${inCall
-                                        ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
-                                        : isDark
-                                            ? "hover:bg-gray-800 hover:shadow-md"
-                                            : "hover:bg-gray-100 hover:shadow-md"
+                                            ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
+                                            : isDark
+                                                ? "hover:bg-gray-800 hover:shadow-md"
+                                                : "hover:bg-gray-100 hover:shadow-md"
                                         }`}
                                 >
                                     <Video className="w-5 h-5" />
@@ -1307,8 +1307,8 @@ export default function ChatArea({
                                         console.log("🔵 After setState, checking in next render...");
                                     }}
                                     className={`p-2.5 rounded-xl transition-all duration-300 ${isDark
-                                        ? "hover:bg-gray-800 hover:shadow-md"
-                                        : "hover:bg-gray-100 hover:shadow-md"
+                                            ? "hover:bg-gray-800 hover:shadow-md"
+                                            : "hover:bg-gray-100 hover:shadow-md"
                                         }`}
                                     title="Tùy chỉnh đoạn chat"
                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
@@ -1439,12 +1439,12 @@ export default function ChatArea({
                                         )}
                                         <div
                                             className={`px-4 py-3 rounded-2xl transition-all duration-300 hover:scale-[1.02] ${isOwn
-                                                ? chatTheme
-                                                    ? `bg-gradient-to-r ${chatTheme} text-white rounded-br-sm shadow-lg shadow-blue-500/30`
-                                                    : "bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 text-white rounded-br-sm shadow-lg shadow-blue-500/30"
-                                                : isDark
-                                                    ? "bg-gray-800 text-gray-100 border border-gray-700/50 rounded-bl-sm shadow-md shadow-gray-900/20"
-                                                    : "bg-white text-gray-900 border border-gray-200/50 rounded-bl-sm shadow-md shadow-gray-200/30"
+                                                    ? chatTheme
+                                                        ? `bg-gradient-to-r ${chatTheme} text-white rounded-br-sm shadow-lg shadow-blue-500/30`
+                                                        : "bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 text-white rounded-br-sm shadow-lg shadow-blue-500/30"
+                                                    : isDark
+                                                        ? "bg-gray-800 text-gray-100 border border-gray-700/50 rounded-bl-sm shadow-md shadow-gray-900/20"
+                                                        : "bg-white text-gray-900 border border-gray-200/50 rounded-bl-sm shadow-md shadow-gray-200/30"
                                                 }`}
                                         >
                                             {/* Hiển thị ảnh */}
@@ -1522,10 +1522,10 @@ export default function ChatArea({
             {/* Input */}
             <div
                 className={`p-4 border-t backdrop-blur-md shadow-lg ${hasTheme
-                    ? ""
-                    : isDark
-                        ? "bg-gray-900/95 border-gray-800/50"
-                        : "bg-white/95 border-gray-200/50"
+                        ? ""
+                        : isDark
+                            ? "bg-gray-900/95 border-gray-800/50"
+                            : "bg-white/95 border-gray-200/50"
                     }`}
                 style={hasTheme ? getThemeHeaderStyle() : undefined}
             >
@@ -1537,8 +1537,8 @@ export default function ChatArea({
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSend()}
                         className={`flex-1 rounded-xl px-4 py-3 text-sm border transition-all duration-300 ${isDark
-                            ? "bg-gray-800/80 border-gray-700/50 text-white placeholder-gray-500 focus:border-blue-500 focus:bg-gray-800 focus:shadow-lg focus:shadow-blue-500/20"
-                            : "bg-white/80 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:shadow-lg focus:shadow-blue-500/10"
+                                ? "bg-gray-800/80 border-gray-700/50 text-white placeholder-gray-500 focus:border-blue-500 focus:bg-gray-800 focus:shadow-lg focus:shadow-blue-500/20"
+                                : "bg-white/80 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:shadow-lg focus:shadow-blue-500/10"
                             } focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:scale-[1.02]`}
                     />
                     {/* Icons on the right side */}
@@ -1555,8 +1555,8 @@ export default function ChatArea({
                         <button
                             onClick={() => imageInputRef.current?.click()}
                             className={`p-2.5 rounded-xl transition-all duration-300 ${isDark
-                                ? "hover:bg-gray-700/80 text-gray-300 hover:text-white hover:shadow-md"
-                                : "hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:shadow-md"
+                                    ? "hover:bg-gray-700/80 text-gray-300 hover:text-white hover:shadow-md"
+                                    : "hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:shadow-md"
                                 }`}
                             title="Gửi ảnh"
                         >
@@ -1565,8 +1565,8 @@ export default function ChatArea({
                         <button
                             onClick={handleQuickReaction}
                             className={`p-2.5 rounded-xl transition-all duration-300 ${isDark
-                                ? "text-blue-400 hover:bg-blue-900/30 hover:shadow-md hover:scale-110"
-                                : "text-blue-600 hover:bg-blue-50 hover:shadow-md hover:scale-110"
+                                    ? "text-blue-400 hover:bg-blue-900/30 hover:shadow-md hover:scale-110"
+                                    : "text-blue-600 hover:bg-blue-50 hover:shadow-md hover:scale-110"
                                 }`}
                             title="Cảm xúc nhanh"
                         >
