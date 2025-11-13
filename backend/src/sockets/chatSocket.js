@@ -15,16 +15,7 @@ export const chatSocket = (io) => {
     // Khi gửi tin nhắn (hỗ trợ user -> user và group)
     socket.on(
       "sendMessage",
-      async ({
-        senderId,
-        receiverId,
-        content,
-        imgUrl,
-        audioUrl,
-        gifUrl,
-        messageType,
-        groupId,
-      }) => {
+      async ({ senderId, receiverId, content, imgUrl, audioUrl, gifUrl, messageType, groupId }) => {
         try {
           // Kiểm tra có ít nhất một loại nội dung
           const hasContent = content || imgUrl || audioUrl || gifUrl;
@@ -66,10 +57,7 @@ export const chatSocket = (io) => {
             const populatedMsg = await message.populate([
               { path: "senderId", select: "username displayName avatarUrl" },
               { path: "groupId", select: "name" },
-              {
-                path: "seenBy.userId",
-                select: "username displayName avatarUrl",
-              },
+              { path: "seenBy.userId", select: "username displayName avatarUrl" },
             ]);
 
             // Emit tới tất cả thành viên
