@@ -10,7 +10,7 @@ const SignInPage = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
-      
+
       {/* Content */}
       <div className="relative z-10 w-full">
         <SigninForm />
@@ -18,5 +18,6 @@ const SignInPage = () => {
     </div>
   );
 };
+
 
 export default SignInPage;

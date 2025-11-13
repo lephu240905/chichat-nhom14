@@ -1,6 +1,7 @@
 import { SignupForm } from "@/components/auth/signup-form";
 
 const SignUpPage = () => {
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
       {/* Animated Background */}
@@ -10,7 +11,7 @@ const SignUpPage = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
-      
+
       {/* Content */}
       <div className="relative z-10 w-full">
         <SignupForm />
@@ -18,5 +19,6 @@ const SignUpPage = () => {
     </div>
   );
 };
+
 
 export default SignUpPage;
