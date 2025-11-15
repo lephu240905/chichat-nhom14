@@ -79,6 +79,7 @@ function ChatCustomizeModal({
 
       setShowThemePicker(false);
       // Emit event để ChatArea có thể cập nhật theme
+<<<<<<< HEAD
       window.dispatchEvent(
         new CustomEvent("chatThemeChanged", {
           detail: { chatId: selectedChat, theme: theme.color },
@@ -94,6 +95,19 @@ function ChatCustomizeModal({
           },
         })
       );
+=======
+      window.dispatchEvent(new CustomEvent('chatThemeChanged', {
+        detail: { chatId: selectedChat, theme: theme.color }
+      }));
+      // Emit storage change event để update UI
+      window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
+        detail: {
+          chatId: selectedChat,
+          type: 'theme',
+          value: theme.color
+        }
+      }));
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
       toast.success(`Đã đổi chủ đề thành: ${theme.name}`, {
         description: "Chủ đề đã được cập nhật thành công",
       });
@@ -121,6 +135,7 @@ function ChatCustomizeModal({
 
       setShowQuickReactionPicker(false);
       // Emit event để ChatArea có thể cập nhật quick reaction
+<<<<<<< HEAD
       window.dispatchEvent(
         new CustomEvent("chatCustomizationChanged", {
           detail: {
@@ -130,6 +145,15 @@ function ChatCustomizeModal({
           },
         })
       );
+=======
+      window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
+        detail: {
+          chatId: selectedChat,
+          type: 'quickReaction',
+          value: emoji
+        }
+      }));
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
       toast.success(`Đã đổi cảm xúc nhanh thành: ${emoji}`, {
         description: "Cảm xúc nhanh đã được cập nhật",
       });
@@ -148,6 +172,7 @@ function ChatCustomizeModal({
       if (isGroup) {
         // Đổi tên nhóm
         if (nickname.trim()) {
+<<<<<<< HEAD
           const response = await api.put(
             `/chat-customizations/${selectedChat}`,
             {
@@ -155,6 +180,12 @@ function ChatCustomizeModal({
               isGroup: true,
             }
           );
+=======
+          const response = await api.put(`/chat-customizations/${selectedChat}`, {
+            nickname: nickname.trim(),
+            isGroup: true,
+          });
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
 
           // Refresh group info từ response hoặc fetch lại
           if (response.data?.group) {
@@ -190,6 +221,7 @@ function ChatCustomizeModal({
           const key = `chat_nickname_${selectedChat}`;
           localStorage.setItem(key, nickname.trim());
 
+<<<<<<< HEAD
           window.dispatchEvent(
             new CustomEvent("chatCustomizationChanged", {
               detail: {
@@ -199,6 +231,15 @@ function ChatCustomizeModal({
               },
             })
           );
+=======
+          window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
+            detail: {
+              chatId: selectedChat,
+              type: 'nickname',
+              value: nickname.trim()
+            }
+          }));
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
           toast.success(`Đã lưu biệt danh: ${nickname.trim()}`, {
             description: "Biệt danh đã được lưu thành công",
           });
@@ -211,6 +252,7 @@ function ChatCustomizeModal({
           const key = `chat_nickname_${selectedChat}`;
           localStorage.removeItem(key);
 
+<<<<<<< HEAD
           window.dispatchEvent(
             new CustomEvent("chatCustomizationChanged", {
               detail: {
@@ -220,6 +262,15 @@ function ChatCustomizeModal({
               },
             })
           );
+=======
+          window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
+            detail: {
+              chatId: selectedChat,
+              type: 'nickname',
+              value: null
+            }
+          }));
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
           toast.success("Đã xóa biệt danh", {
             description: "Biệt danh đã được xóa thành công",
           });
@@ -269,7 +320,14 @@ function ChatCustomizeModal({
   return (
     <div
       className="fixed inset-0 flex items-center justify-center"
+<<<<<<< HEAD
       onClick={onClose}
+=======
+      onClick={() => {
+        console.log("🟡 Modal background clicked");
+        onClose();
+      }}
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
       style={{
         zIndex: 99999,
         position: "fixed",
@@ -284,10 +342,19 @@ function ChatCustomizeModal({
       }}
     >
       <div
+<<<<<<< HEAD
         onClick={(e) => e.stopPropagation()}
         className={`w-full max-w-sm rounded-lg shadow-2xl ${
           isDark ? "bg-gray-800" : "bg-white"
         }`}
+=======
+        onClick={(e) => {
+          e.stopPropagation();
+          console.log("🟢 Modal content clicked");
+        }}
+        className={`w-full max-w-sm rounded-lg shadow-2xl ${isDark ? "bg-gray-800" : "bg-white"
+          }`}
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
         style={{
           zIndex: 100000,
           position: "relative",
@@ -297,24 +364,27 @@ function ChatCustomizeModal({
       >
         {/* Header */}
         <div
+<<<<<<< HEAD
           className={`flex items-center justify-between p-4 border-b ${
             isDark
               ? "border-gray-700 bg-gray-900"
               : "border-gray-200 bg-gray-50"
           }`}
+=======
+          className={`flex items-center justify-between p-4 border-b ${isDark ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-gray-50"
+            }`}
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
         >
           <h3
-            className={`font-semibold ${
-              isDark ? "text-white" : "text-gray-900"
-            }`}
+            className={`font-semibold ${isDark ? "text-white" : "text-gray-900"
+              }`}
           >
             Tùy chỉnh đoạn chat
           </h3>
           <button
             onClick={onClose}
-            className={`p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              isDark ? "text-white" : "text-gray-900"
-            }`}
+            className={`p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 ${isDark ? "text-white" : "text-gray-900"
+              }`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -330,11 +400,10 @@ function ChatCustomizeModal({
                 setShowQuickReactionPicker(false);
                 setShowNicknameEditor(false);
               }}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                isDark
+              className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
                   ? "hover:bg-gray-700 text-white"
                   : "hover:bg-gray-100 text-gray-900"
-              }`}
+                }`}
             >
               <div className="w-8 h-8 flex items-center justify-center">
                 <div className="w-5 h-5 rounded-full bg-blue-600 border-2 border-white">
@@ -345,9 +414,8 @@ function ChatCustomizeModal({
             </button>
             {showThemePicker && (
               <div
-                className={`mt-2 p-3 rounded-lg ${
-                  isDark ? "bg-gray-700" : "bg-gray-50"
-                }`}
+                className={`mt-2 p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-50"
+                  }`}
               >
                 <div className="grid grid-cols-3 gap-2">
                   {themes.map((theme, idx) => (
@@ -373,11 +441,10 @@ function ChatCustomizeModal({
                 setShowThemePicker(false);
                 setShowNicknameEditor(false);
               }}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                isDark
+              className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
                   ? "hover:bg-gray-700 text-white"
                   : "hover:bg-gray-100 text-gray-900"
-              }`}
+                }`}
             >
               <div className="w-8 h-8 flex items-center justify-center">
                 <span className="text-xl">👍</span>
@@ -386,9 +453,8 @@ function ChatCustomizeModal({
             </button>
             {showQuickReactionPicker && (
               <div
-                className={`mt-2 p-3 rounded-lg ${
-                  isDark ? "bg-gray-700" : "bg-gray-50"
-                }`}
+                className={`mt-2 p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-50"
+                  }`}
               >
                 <div className="grid grid-cols-5 gap-2">
                   {quickReactionEmojis.map((emoji, idx) => (
@@ -419,11 +485,10 @@ function ChatCustomizeModal({
                     setNickname(groupInfo.name || "");
                   }
                 }}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                  isDark
+                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
                     ? "hover:bg-gray-700 text-white"
                     : "hover:bg-gray-100 text-gray-900"
-                }`}
+                  }`}
               >
                 <div className="w-8 h-8 flex items-center justify-center">
                   <span
@@ -443,28 +508,25 @@ function ChatCustomizeModal({
               </button>
               {showNicknameEditor && (
                 <div
-                  className={`mt-2 p-3 rounded-lg ${
-                    isDark ? "bg-gray-700" : "bg-gray-50"
-                  }`}
+                  className={`mt-2 p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-50"
+                    }`}
                 >
                   <input
                     type="text"
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
                     placeholder="Nhập tên nhóm..."
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
+                    className={`w-full px-3 py-2 rounded-lg border ${isDark
                         ? "bg-gray-800 border-gray-600 text-white placeholder-gray-400"
                         : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                      } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   />
                   <button
                     onClick={handleNicknameSave}
-                    className={`mt-2 w-full px-4 py-2 rounded-lg ${
-                      isDark
+                    className={`mt-2 w-full px-4 py-2 rounded-lg ${isDark
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "bg-blue-500 hover:bg-blue-600 text-white"
-                    } transition-colors`}
+                      } transition-colors`}
                   >
                     Lưu
                   </button>
@@ -493,11 +555,10 @@ function ChatCustomizeModal({
                     }
                   }
                 }}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                  isDark
+                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
                     ? "hover:bg-gray-700 text-white"
                     : "hover:bg-gray-100 text-gray-900"
-                }`}
+                  }`}
               >
                 <div className="w-8 h-8 flex items-center justify-center">
                   <span
@@ -517,28 +578,25 @@ function ChatCustomizeModal({
               </button>
               {showNicknameEditor && (
                 <div
-                  className={`mt-2 p-3 rounded-lg ${
-                    isDark ? "bg-gray-700" : "bg-gray-50"
-                  }`}
+                  className={`mt-2 p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-50"
+                    }`}
                 >
                   <input
                     type="text"
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
                     placeholder="Nhập biệt danh..."
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDark
+                    className={`w-full px-3 py-2 rounded-lg border ${isDark
                         ? "bg-gray-800 border-gray-600 text-white placeholder-gray-400"
                         : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                      } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   />
                   <button
                     onClick={handleNicknameSave}
-                    className={`mt-2 w-full px-4 py-2 rounded-lg ${
-                      isDark
+                    className={`mt-2 w-full px-4 py-2 rounded-lg ${isDark
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "bg-blue-500 hover:bg-blue-600 text-white"
-                    } transition-colors`}
+                      } transition-colors`}
                   >
                     Lưu
                   </button>
@@ -559,11 +617,10 @@ function ChatCustomizeModal({
                     setShowQuickReactionPicker(false);
                     setShowNicknameEditor(false);
                   }}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                    isDark
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
                       ? "hover:bg-gray-700 text-white"
                       : "hover:bg-gray-100 text-gray-900"
-                  }`}
+                    }`}
                 >
                   <div className="w-8 h-8 flex items-center justify-center">
                     <Users
@@ -583,11 +640,11 @@ function ChatCustomizeModal({
                 </button>
                 {showMembersList && groupInfo && (
                   <div
-                    className={`mt-2 p-3 rounded-lg ${
-                      isDark ? "bg-gray-700" : "bg-gray-50"
-                    }`}
+                    className={`mt-2 p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-50"
+                      }`}
                   >
                     <div className="space-y-2">
+<<<<<<< HEAD
                       {groupInfo.members &&
                         groupInfo.members.map((member: any) => {
                           const memberData = member._id
@@ -622,6 +679,27 @@ function ChatCustomizeModal({
                             </div>
                           );
                         })}
+=======
+                      {groupInfo.members && groupInfo.members.map((member: any) => {
+                        const memberData = member._id ? member : { _id: member, displayName: "", username: "" };
+                        const displayName = memberData.displayName || memberData.username || "Unknown";
+                        const isAdmin = groupInfo.admin && String(groupInfo.admin) === String(memberData._id);
+                        return (
+                          <div
+                            key={memberData._id}
+                            className={`flex items-center justify-between p-2 rounded-lg ${isDark ? "bg-gray-800" : "bg-white"
+                              }`}
+                          >
+                            <span className={isDark ? "text-white" : "text-gray-900"}>
+                              {displayName}
+                              {isAdmin && (
+                                <span className="ml-2 text-xs text-blue-500">(Admin)</span>
+                              )}
+                            </span>
+                          </div>
+                        );
+                      })}
+>>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
                     </div>
                   </div>
                 )}
@@ -631,11 +709,10 @@ function ChatCustomizeModal({
               <div className="mb-1">
                 <button
                   onClick={handleLeaveGroup}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                    isDark
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
                       ? "hover:bg-red-900/50 text-red-400"
                       : "hover:bg-red-50 text-red-600"
-                  }`}
+                    }`}
                 >
                   <div className="w-8 h-8 flex items-center justify-center">
                     <LogOut className={`w-5 h-5`} />

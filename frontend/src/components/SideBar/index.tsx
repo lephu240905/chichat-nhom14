@@ -27,8 +27,8 @@ import { toast } from "sonner";
 const getAvatarUrl = (avatarUrl: string | undefined) => {
   if (!avatarUrl) return null;
   if (avatarUrl.startsWith("http")) return avatarUrl;
-  const baseURL = import.meta.env.MODE === "development" 
-    ? "http://localhost:5001" 
+  const baseURL = import.meta.env.MODE === "development"
+    ? "http://localhost:5001"
     : "";
   return `${baseURL}${avatarUrl}`;
 };
@@ -114,7 +114,7 @@ export default function Sidebar({
         setUserData({ ...userData, avatarUrl: e.detail.avatarUrl });
       }
     };
-    
+
     window.addEventListener('userAvatarUpdated', handleAvatarUpdate as EventListener);
     return () => {
       window.removeEventListener('userAvatarUpdated', handleAvatarUpdate as EventListener);
@@ -129,7 +129,7 @@ export default function Sidebar({
         api.get("/friends"),
         api.get("/friends/pending")
       ]);
-      
+
       const accepted = resFriends.data.filter(
         (f: any) => f.status === "accepted"
       );
@@ -154,8 +154,8 @@ export default function Sidebar({
     fetchLatestMessages();
 
     // ✅ Kết nối socket và lắng nghe realtime
-    const socketUrl = import.meta.env.MODE === "development" 
-      ? "http://localhost:5001" 
+    const socketUrl = import.meta.env.MODE === "development"
+      ? "http://localhost:5001"
       : window.location.origin;
     const socket = io(socketUrl, {
       query: { userId: user._id },
@@ -216,7 +216,7 @@ export default function Sidebar({
           if (friend._id === data.userId) {
             return {
               ...f,
-              sender: f.sender._id === data.userId 
+              sender: f.sender._id === data.userId
                 ? { ...f.sender, avatarUrl: data.avatarUrl }
                 : f.sender,
               receiver: f.receiver._id === data.userId
@@ -238,7 +238,7 @@ export default function Sidebar({
           if (friend._id === data.userId) {
             return {
               ...f,
-              sender: f.sender._id === data.userId 
+              sender: f.sender._id === data.userId
                 ? { ...f.sender, status: data.status }
                 : f.sender,
               receiver: f.receiver._id === data.userId
@@ -268,12 +268,12 @@ export default function Sidebar({
 
     // Lắng nghe tin nhắn mới để cập nhật latest messages
     socket.on("receiveMessage", (message: any) => {
-      const chatId = message.groupId 
+      const chatId = message.groupId
         ? message.groupId._id || message.groupId
         : (String(message.senderId._id || message.senderId) === String(user._id)
-            ? message.receiverId._id || message.receiverId
-            : message.senderId._id || message.senderId);
-      
+          ? message.receiverId._id || message.receiverId
+          : message.senderId._id || message.senderId);
+
       setLatestMessages((prev) => ({
         ...prev,
         [String(chatId)]: message,
@@ -365,10 +365,10 @@ export default function Sidebar({
   // Helper function để kiểm tra tin nhắn đã được xem chưa
   const isMessageSeen = (message: any): boolean => {
     if (!message) return true;
-    
+
     const senderId = String(message.senderId._id || message.senderId);
     const currentUserId = String(user._id);
-    
+
     // Nếu tin nhắn là của chính user thì luôn coi là đã xem
     if (senderId === currentUserId) {
       return true;
@@ -469,7 +469,7 @@ export default function Sidebar({
       toast.success("Đã hủy kết bạn thành công", {
         description: "Tất cả tin nhắn đã được xóa",
       });
-      
+
       // Xóa friend khỏi danh sách
       setFriends((prev) => prev.filter((f) => {
         const friend = f.sender._id === user._id ? f.receiver : f.sender;
@@ -508,21 +508,21 @@ export default function Sidebar({
       const friendB = b.sender._id === user._id ? b.receiver : b.sender;
       const msgA = latestMessages[friendA._id];
       const msgB = latestMessages[friendB._id];
-      
+
       // Nếu có tin nhắn chưa đọc, ưu tiên lên trên
       const isSeenA = isMessageSeen(msgA);
       const isSeenB = isMessageSeen(msgB);
-      
+
       if (!isSeenA && isSeenB) return -1; // A chưa đọc, B đã đọc -> A lên trên
       if (isSeenA && !isSeenB) return 1; // A đã đọc, B chưa đọc -> B lên trên
-      
+
       // Cả hai cùng trạng thái, sắp xếp theo thời gian
       if (msgA && msgB) {
         const timeA = new Date(msgA.createdAt || msgA.timestamp || 0).getTime();
         const timeB = new Date(msgB.createdAt || msgB.timestamp || 0).getTime();
         return timeB - timeA; // Mới nhất lên trên
       }
-      
+
       if (msgA && !msgB) return -1;
       if (!msgA && msgB) return 1;
       return 0;
@@ -531,31 +531,27 @@ export default function Sidebar({
   // 🧭 UI Giao diện (giữ nguyên từ bản đẹp)
   return (
     <div
-      className={`w-80 flex flex-col transition-colors duration-300 shadow-xl ${
-        isDark 
-          ? "bg-gradient-to-b from-gray-900 to-gray-800 text-white border-r border-gray-700" 
+      className={`w-80 flex flex-col transition-colors duration-300 shadow-xl ${isDark
+          ? "bg-gradient-to-b from-gray-900 to-gray-800 text-white border-r border-gray-700"
           : "bg-gradient-to-b from-white to-gray-50 text-gray-900 border-r border-gray-200"
-      }`}
+        }`}
     >
       {/* Header */}
       <div
-        className={`p-5 border-b backdrop-blur-sm ${
-          isDark 
-            ? "border-gray-700/50 bg-gray-900/80" 
+        className={`p-5 border-b backdrop-blur-sm ${isDark
+            ? "border-gray-700/50 bg-gray-900/80"
             : "border-gray-200/50 bg-white/80"
-        }`}
+          }`}
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl transition-all duration-300 ${
-              isDark 
-                ? "bg-gradient-to-br from-blue-500/20 to-purple-500/20" 
+            <div className={`p-2 rounded-xl transition-all duration-300 ${isDark
+                ? "bg-gradient-to-br from-blue-500/20 to-purple-500/20"
                 : "bg-gradient-to-br from-blue-100 to-purple-100"
-            }`}>
+              }`}>
               <MessageCircle
-                className={`w-5 h-5 transition-transform duration-300 ${
-                  isDark ? "text-blue-400" : "text-blue-600"
-                }`}
+                className={`w-5 h-5 transition-transform duration-300 ${isDark ? "text-blue-400" : "text-blue-600"
+                  }`}
               />
             </div>
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -564,11 +560,10 @@ export default function Sidebar({
           </div>
           <button
             onClick={onToggleDark}
-            className={`p-2.5 rounded-xl transition-all duration-300 hover:scale-110 hover:rotate-12 ${
-              isDark
+            className={`p-2.5 rounded-xl transition-all duration-300 hover:scale-110 hover:rotate-12 ${isDark
                 ? "bg-gradient-to-br from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 shadow-lg shadow-gray-900/50"
                 : "bg-gradient-to-br from-gray-100 to-gray-50 hover:from-gray-200 hover:to-gray-100 shadow-md shadow-gray-200/50"
-            }`}
+              }`}
           >
             {isDark ? (
               <Sun className="w-5 h-5 text-yellow-400" />
@@ -581,41 +576,37 @@ export default function Sidebar({
         {/* Search bar */}
         <div className="relative">
           <Search
-            className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
-              isDark ? "text-gray-400" : "text-gray-500"
-            }`}
+            className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDark ? "text-gray-400" : "text-gray-500"
+              }`}
           />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm kiếm bạn bè..."
-            className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm transition-all duration-300 ${
-              isDark
+            className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm transition-all duration-300 ${isDark
                 ? "bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-500 focus:border-blue-500 focus:bg-gray-800 focus:shadow-lg focus:shadow-blue-500/20"
                 : "bg-white/80 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:shadow-lg focus:shadow-blue-500/10"
-            } focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:scale-[1.02]`}
+              } focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:scale-[1.02]`}
           />
         </div>
       </div>
 
       {/* Add friend section */}
       <div
-        className={`p-4 border-b backdrop-blur-sm ${
-          isDark 
-            ? "border-gray-700/50 bg-gray-900/50" 
+        className={`p-4 border-b backdrop-blur-sm ${isDark
+            ? "border-gray-700/50 bg-gray-900/50"
             : "border-gray-200/50 bg-white/50"
-        }`}
+          }`}
       >
         <div className="flex gap-2">
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Nhập username..."
-            className={`flex-1 px-4 py-3 rounded-xl border text-sm transition-all duration-300 ${
-              isDark
+            className={`flex-1 px-4 py-3 rounded-xl border text-sm transition-all duration-300 ${isDark
                 ? "bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-500 focus:border-blue-500 focus:bg-gray-800 focus:shadow-lg focus:shadow-blue-500/20"
                 : "bg-white/80 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:shadow-lg focus:shadow-blue-500/10"
-            } focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:scale-[1.02]`}
+              } focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:scale-[1.02]`}
           />
           <button
             onClick={handleAddFriend}
@@ -631,14 +622,12 @@ export default function Sidebar({
         {/* Received requests */}
         {receivedRequests.length > 0 && (
           <div
-            className={`p-4 border-b ${
-              isDark ? "border-gray-800" : "border-gray-200"
-            }`}
+            className={`p-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"
+              }`}
           >
             <h3
-              className={`font-semibold mb-3 text-sm flex items-center gap-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
+              className={`font-semibold mb-3 text-sm flex items-center gap-2 ${isDark ? "text-gray-300" : "text-gray-700"
+                }`}
             >
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
               Lời mời kết bạn ({receivedRequests.length})
@@ -647,11 +636,10 @@ export default function Sidebar({
               {receivedRequests.map((r) => (
                 <div
                   key={r._id}
-                  className={`p-3 rounded-xl transition-colors ${
-                    isDark
+                  className={`p-3 rounded-xl transition-colors ${isDark
                       ? "bg-gray-800 hover:bg-gray-700"
                       : "bg-gray-50 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -673,11 +661,10 @@ export default function Sidebar({
                     </button>
                     <button
                       onClick={() => handleReject(r._id)}
-                      className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
-                        isDark
+                      className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1 ${isDark
                           ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
                           : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                      }`}
+                        }`}
                     >
                       <X className="w-3 h-3" />
                       Từ chối
@@ -692,14 +679,12 @@ export default function Sidebar({
         {/* Sent requests */}
         {sentRequests.length > 0 && (
           <div
-            className={`p-4 border-b ${
-              isDark ? "border-gray-800" : "border-gray-200"
-            }`}
+            className={`p-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"
+              }`}
           >
             <h3
-              className={`font-semibold mb-3 text-sm flex items-center gap-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
+              className={`font-semibold mb-3 text-sm flex items-center gap-2 ${isDark ? "text-gray-300" : "text-gray-700"
+                }`}
             >
               <Clock className="w-4 h-4" />
               Đã gửi lời mời ({sentRequests.length})
@@ -708,9 +693,8 @@ export default function Sidebar({
               {sentRequests.map((r) => (
                 <div
                   key={r._id}
-                  className={`p-3 rounded-xl flex items-center justify-between transition-colors ${
-                    isDark ? "bg-gray-800" : "bg-gray-50"
-                  }`}
+                  className={`p-3 rounded-xl flex items-center justify-between transition-colors ${isDark ? "bg-gray-800" : "bg-gray-50"
+                    }`}
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-white font-semibold text-sm">
@@ -733,9 +717,8 @@ export default function Sidebar({
         {/* Groups list */}
         <div className="p-4 border-t">
           <h3
-            className={`font-semibold mb-3 text-sm flex items-center gap-2 ${
-              isDark ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`font-semibold mb-3 text-sm flex items-center gap-2 ${isDark ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             <Users className="w-4 h-4" />
             Nhóm ({groups.length})
@@ -748,18 +731,18 @@ export default function Sidebar({
                   const msgB = latestMessages[b._id];
                   const isSeenA = isMessageSeen(msgA);
                   const isSeenB = isMessageSeen(msgB);
-                  
+
                   // Ưu tiên tin nhắn chưa đọc
                   if (!isSeenA && isSeenB) return -1;
                   if (isSeenA && !isSeenB) return 1;
-                  
+
                   // Sắp xếp theo thời gian
                   if (msgA && msgB) {
                     const timeA = new Date(msgA.createdAt || msgA.timestamp || 0).getTime();
                     const timeB = new Date(msgB.createdAt || msgB.timestamp || 0).getTime();
                     return timeB - timeA;
                   }
-                  
+
                   if (msgA && !msgB) return -1;
                   if (!msgA && msgB) return 1;
                   return 0;
@@ -769,7 +752,7 @@ export default function Sidebar({
                   const messagePreview = getMessagePreview(latestMsg);
                   const isSeen = isMessageSeen(latestMsg);
                   const isSelected = selectedChat === g._id;
-                  
+
                   return (
                     <div
                       key={g._id}
@@ -779,25 +762,23 @@ export default function Sidebar({
                           window.dispatchEvent(new CustomEvent('chatSelected'));
                         }, 100);
                       }}
-                      className={`p-3.5 rounded-2xl cursor-pointer transition-all duration-300 group relative ${
-                        isSelected
+                      className={`p-3.5 rounded-2xl cursor-pointer transition-all duration-300 group relative ${isSelected
                           ? "bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 text-white shadow-xl shadow-blue-500/40 scale-[1.02]"
                           : !isSeen
-                          ? isDark
-                            ? "bg-blue-900/30 border border-blue-700/50 hover:bg-blue-900/40"
-                            : "bg-blue-50 border border-blue-200 hover:bg-blue-100"
-                          : isDark
-                          ? "hover:bg-gray-800/70 hover:shadow-lg hover:shadow-gray-900/20 hover:scale-[1.01]"
-                          : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:shadow-md hover:shadow-gray-200/50 hover:scale-[1.01]"
-                      }`}
+                            ? isDark
+                              ? "bg-blue-900/30 border border-blue-700/50 hover:bg-blue-900/40"
+                              : "bg-blue-50 border border-blue-200 hover:bg-blue-100"
+                            : isDark
+                              ? "hover:bg-gray-800/70 hover:shadow-lg hover:shadow-gray-900/20 hover:scale-[1.01]"
+                              : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:shadow-md hover:shadow-gray-200/50 hover:scale-[1.01]"
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className="relative">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-lg transition-all duration-300 ${
-                            isSelected
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-lg transition-all duration-300 ${isSelected
                               ? "bg-white/20 ring-2 ring-white/30 scale-110"
                               : "bg-gradient-to-br from-indigo-400 to-purple-400 group-hover:scale-110 group-hover:shadow-xl"
-                          }`}>
+                            }`}>
                             {g.name?.[0]?.toUpperCase() || "G"}
                           </div>
                           {!isSeen && !isSelected && (
@@ -806,25 +787,23 @@ export default function Sidebar({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
-                            <p className={`font-semibold text-sm truncate transition-all ${
-                              isSelected ? "text-white" : !isSeen ? "font-bold" : ""
-                            }`}>{g.name}</p>
+                            <p className={`font-semibold text-sm truncate transition-all ${isSelected ? "text-white" : !isSeen ? "font-bold" : ""
+                              }`}>{g.name}</p>
                             {!isSeen && !isSelected && (
                               <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                             )}
                           </div>
                           <p
-                            className={`text-xs truncate transition-all ${
-                              isSelected
+                            className={`text-xs truncate transition-all ${isSelected
                                 ? "text-white/90"
                                 : isSeen
-                                ? isDark
-                                  ? "text-gray-500 font-normal"
-                                  : "text-gray-400 font-normal"
-                                : isDark
-                                ? "text-blue-300 font-bold"
-                                : "text-blue-600 font-bold"
-                            }`}
+                                  ? isDark
+                                    ? "text-gray-500 font-normal"
+                                    : "text-gray-400 font-normal"
+                                  : isDark
+                                    ? "text-blue-300 font-bold"
+                                    : "text-blue-600 font-bold"
+                              }`}
                           >
                             {messagePreview || "Chưa có tin nhắn"}
                           </p>
@@ -836,9 +815,8 @@ export default function Sidebar({
             </div>
           ) : (
             <p
-              className={`text-sm ${
-                isDark ? "text-gray-500" : "text-gray-400"
-              } text-center py-4`}
+              className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"
+                } text-center py-4`}
             >
               Chưa có nhóm nào
             </p>
@@ -846,9 +824,8 @@ export default function Sidebar({
         </div>
         <div className="p-4">
           <h3
-            className={`font-semibold mb-3 text-sm flex items-center gap-2 ${
-              isDark ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`font-semibold mb-3 text-sm flex items-center gap-2 ${isDark ? "text-gray-300" : "text-gray-700"
+              }`}
           >
             <Users className="w-4 h-4" />
             Bạn bè ({filteredFriends.length})
@@ -863,23 +840,22 @@ export default function Sidebar({
                 const latestMsg = latestMessages[friend._id];
                 const messagePreview = getMessagePreview(latestMsg);
                 const isSeen = isMessageSeen(latestMsg);
-                
+
                 return (
                   <div
                     key={f._id}
-                    className={`p-3.5 rounded-2xl transition-all duration-300 group relative ${
-                      isSelected
+                    className={`p-3.5 rounded-2xl transition-all duration-300 group relative ${isSelected
                         ? "bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 text-white shadow-xl shadow-blue-500/40 scale-[1.02]"
                         : !isSeen
-                        ? isDark
-                          ? "bg-blue-900/30 border border-blue-700/50 hover:bg-blue-900/40"
-                          : "bg-blue-50 border border-blue-200 hover:bg-blue-100"
-                        : isDark
-                        ? "hover:bg-gray-800/70 hover:shadow-lg hover:shadow-gray-900/20 hover:scale-[1.01]"
-                        : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:shadow-md hover:shadow-gray-200/50 hover:scale-[1.01]"
-                    }`}
+                          ? isDark
+                            ? "bg-blue-900/30 border border-blue-700/50 hover:bg-blue-900/40"
+                            : "bg-blue-50 border border-blue-200 hover:bg-blue-100"
+                          : isDark
+                            ? "hover:bg-gray-800/70 hover:shadow-lg hover:shadow-gray-900/20 hover:scale-[1.01]"
+                            : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:shadow-md hover:shadow-gray-200/50 hover:scale-[1.01]"
+                      }`}
                   >
-                    <div 
+                    <div
                       className="flex items-center gap-3 cursor-pointer"
                       onClick={() => {
                         onSelectChat(friend._id);
@@ -893,29 +869,26 @@ export default function Sidebar({
                           <img
                             src={getAvatarUrl(friend.avatarUrl)!}
                             alt={displayName}
-                            className={`w-12 h-12 rounded-full object-cover transition-all duration-300 ${
-                              isSelected 
-                                ? "ring-2 ring-white/30 scale-110" 
+                            className={`w-12 h-12 rounded-full object-cover transition-all duration-300 ${isSelected
+                                ? "ring-2 ring-white/30 scale-110"
                                 : "group-hover:scale-110 group-hover:shadow-lg"
-                            }`}
+                              }`}
                           />
                         ) : (
                           <div
-                            className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-lg transition-all duration-300 ${
-                              isSelected
+                            className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-lg transition-all duration-300 ${isSelected
                                 ? "bg-white/20 ring-2 ring-white/30 scale-110"
                                 : "bg-gradient-to-br from-indigo-400 to-purple-400 group-hover:scale-110 group-hover:shadow-xl"
-                            }`}
+                              }`}
                           >
                             {displayName[0]?.toUpperCase() || "?"}
                           </div>
                         )}
                         {friend.status === "online" && (
-                          <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 rounded-full transition-all duration-300 ${
-                            isSelected 
-                              ? "border-white shadow-lg shadow-green-500/50" 
+                          <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 rounded-full transition-all duration-300 ${isSelected
+                              ? "border-white shadow-lg shadow-green-500/50"
                               : "border-white group-hover:scale-125"
-                          }`}></span>
+                            }`}></span>
                         )}
                         {!isSeen && !isSelected && (
                           <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white dark:border-gray-800 animate-pulse"></div>
@@ -923,9 +896,8 @@ export default function Sidebar({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className={`font-semibold text-sm truncate transition-all ${
-                            isSelected ? "text-white" : !isSeen ? "font-bold" : ""
-                          }`}>
+                          <p className={`font-semibold text-sm truncate transition-all ${isSelected ? "text-white" : !isSeen ? "font-bold" : ""
+                            }`}>
                             {displayName}
                           </p>
                           {!isSeen && !isSelected && (
@@ -933,17 +905,16 @@ export default function Sidebar({
                           )}
                         </div>
                         <p
-                          className={`text-xs truncate transition-all ${
-                            isSelected
+                          className={`text-xs truncate transition-all ${isSelected
                               ? "text-white/90"
                               : isSeen
-                              ? isDark
-                                ? "text-gray-500 font-normal"
-                                : "text-gray-400 font-normal"
-                              : isDark
-                              ? "text-blue-300 font-bold"
-                              : "text-blue-600 font-bold"
-                          }`}
+                                ? isDark
+                                  ? "text-gray-500 font-normal"
+                                  : "text-gray-400 font-normal"
+                                : isDark
+                                  ? "text-blue-300 font-bold"
+                                  : "text-blue-600 font-bold"
+                            }`}
                         >
                           {messagePreview || "Chưa có tin nhắn"}
                         </p>
@@ -956,13 +927,12 @@ export default function Sidebar({
                           e.stopPropagation();
                           setOpenFriendMenu(openFriendMenu === friend._id ? null : friend._id);
                         }}
-                        className={`p-1.5 rounded-lg transition-all duration-300 ${
-                          isSelected
+                        className={`p-1.5 rounded-lg transition-all duration-300 ${isSelected
                             ? "text-white/80 hover:bg-white/20 hover:text-white"
                             : isDark
-                            ? "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
-                            : "text-gray-500 hover:bg-gray-200 hover:text-gray-700"
-                        }`}
+                              ? "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
+                              : "text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+                          }`}
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
@@ -972,20 +942,18 @@ export default function Sidebar({
                           ref={(el) => {
                             friendMenuRefs.current[friend._id] = el;
                           }}
-                          className={`absolute right-0 top-full mt-1 w-48 rounded-xl shadow-2xl border backdrop-blur-md z-50 ${
-                            isDark
+                          className={`absolute right-0 top-full mt-1 w-48 rounded-xl shadow-2xl border backdrop-blur-md z-50 ${isDark
                               ? "bg-gray-800/95 border-gray-700/50"
                               : "bg-white/95 border-gray-200/50"
-                          }`}
+                            }`}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
                             onClick={() => handleUnfriend(friend._id)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${
-                              isDark
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${isDark
                                 ? "hover:bg-red-900/50 text-red-400"
                                 : "hover:bg-red-50 text-red-600"
-                            }`}
+                              }`}
                           >
                             <X className="w-4 h-4" />
                             <span className="text-sm font-medium">Hủy kết bạn</span>
@@ -999,9 +967,8 @@ export default function Sidebar({
             </div>
           ) : (
             <p
-              className={`text-sm ${
-                isDark ? "text-gray-500" : "text-gray-400"
-              } text-center py-8`}
+              className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"
+                } text-center py-8`}
             >
               {searchQuery ? "Không tìm thấy bạn bè" : "Chưa có bạn bè nào"}
             </p>
@@ -1011,11 +978,10 @@ export default function Sidebar({
 
       {/* Footer */}
       <div
-        className={`p-4 border-t backdrop-blur-sm ${
-          isDark 
-            ? "border-gray-700/50 bg-gray-900/80" 
+        className={`p-4 border-t backdrop-blur-sm ${isDark
+            ? "border-gray-700/50 bg-gray-900/80"
             : "border-gray-200/50 bg-white/80"
-        }`}
+          }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1059,14 +1025,14 @@ export default function Sidebar({
                     // Cập nhật user data local
                     const updatedUser = { ...userData, avatarUrl: res.data.avatarUrl };
                     setUserData(updatedUser);
-                    
+
                     // Cập nhật user trong auth store
                     const { fetchMe } = useAuthStore.getState();
                     await fetchMe();
-                    
+
                     // Refresh danh sách bạn bè để bạn bè thấy avatar mới
                     fetchFriends();
-                    
+
                     // Dispatch event để các component khác cập nhật
                     window.dispatchEvent(new CustomEvent('userAvatarUpdated', {
                       detail: { avatarUrl: res.data.avatarUrl }
@@ -1089,9 +1055,8 @@ export default function Sidebar({
                 {userData?.displayName || userData?.username || "User"}
               </p>
               <p
-                className={`text-xs flex items-center gap-1.5 ${
-                  isDark ? "text-gray-400" : "text-gray-500"
-                }`}
+                className={`text-xs flex items-center gap-1.5 ${isDark ? "text-gray-400" : "text-gray-500"
+                  }`}
               >
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 Đang hoạt động
@@ -1101,31 +1066,28 @@ export default function Sidebar({
           <div className="relative" ref={settingsMenuRef}>
             <button
               onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-              className={`p-2.5 rounded-xl transition-all duration-300 ${
-                isDark
+              className={`p-2.5 rounded-xl transition-all duration-300 ${isDark
                   ? "hover:bg-gray-700/80 text-gray-300 hover:text-white hover:shadow-md"
                   : "hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:shadow-md"
-              }`}
+                }`}
               title="Cài đặt"
             >
               <Settings className="w-5 h-5" />
             </button>
-            
+
             {/* Settings Menu Dropdown */}
             {showSettingsMenu && (
               <div
-                className={`absolute bottom-full right-0 mb-2 w-56 rounded-xl shadow-2xl border backdrop-blur-md ${
-                  isDark
+                className={`absolute bottom-full right-0 mb-2 w-56 rounded-xl shadow-2xl border backdrop-blur-md ${isDark
                     ? "bg-gray-800/95 border-gray-700/50"
                     : "bg-white/95 border-gray-200/50"
-                } z-50 animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                  } z-50 animate-in fade-in slide-in-from-bottom-2 duration-300`}
               >
                 <div className="p-2">
                   {/* Hiển thị tên tài khoản */}
                   <div
-                    className={`px-3 py-2 rounded-lg ${
-                      isDark ? "bg-gray-700" : "bg-gray-50"
-                    } mb-2`}
+                    className={`px-3 py-2 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-50"
+                      } mb-2`}
                   >
                     <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"} mb-1`}>
                       Tên tài khoản
@@ -1141,11 +1103,10 @@ export default function Sidebar({
                       avatarInputRef.current?.click();
                       setShowSettingsMenu(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                      isDark
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isDark
                         ? "hover:bg-gray-700 text-white"
                         : "hover:bg-gray-100 text-gray-900"
-                    }`}
+                      }`}
                   >
                     <Camera className="w-4 h-4" />
                     <span className="flex-1 text-left">Thay đổi ảnh đại diện</span>
@@ -1161,11 +1122,10 @@ export default function Sidebar({
                         console.error("Lỗi đăng xuất:", error);
                       }
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors mt-1 ${
-                      isDark
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors mt-1 ${isDark
                         ? "hover:bg-red-900/50 text-red-400"
                         : "hover:bg-red-50 text-red-600"
-                    }`}
+                      }`}
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="flex-1 text-left">Đăng xuất</span>
