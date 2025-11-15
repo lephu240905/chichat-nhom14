@@ -1,6 +1,6 @@
 import cloudinary from "../libs/cloudinary.js";
-import fs from "fs/promises";
-import { existsSync } from "fs";
+import fs from "fs";
+import { promises as fsPromises } from "fs";
 
 // Upload ảnh
 export const uploadImage = async (req, res) => {
@@ -26,7 +26,7 @@ export const uploadImage = async (req, res) => {
 
     // Xóa file tạm sau khi upload thành công
     try {
-      await fs.unlink(req.file.path);
+      await fsPromises.unlink(req.file.path);
     } catch (unlinkError) {
       console.warn("⚠️ Không thể xóa file tạm:", unlinkError.message);
     }
@@ -40,11 +40,12 @@ export const uploadImage = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Lỗi upload ảnh:", error);
+    console.error("❌ Stack trace:", error.stack);
 
     // Xóa file tạm nếu có lỗi
-    if (req.file && existsSync(req.file.path)) {
+    if (req.file && fs.existsSync(req.file.path)) {
       try {
-        await fs.unlink(req.file.path);
+        await fsPromises.unlink(req.file.path);
       } catch (unlinkError) {
         console.warn("⚠️ Không thể xóa file tạm:", unlinkError.message);
       }

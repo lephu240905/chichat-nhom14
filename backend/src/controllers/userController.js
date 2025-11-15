@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 import cloudinary from "../libs/cloudinary.js";
-import fs from "fs/promises";
-import { existsSync } from "fs";
+import fs from "fs";
+import { promises as fsPromises } from "fs";
 
 export const authMe = async (req, res) => {
   try {
@@ -82,7 +82,7 @@ export const updateAvatar = async (req, res) => {
 
     // Xóa file tạm sau khi upload thành công
     try {
-      await fs.unlink(req.file.path);
+      await fsPromises.unlink(req.file.path);
     } catch (unlinkError) {
       console.warn("⚠️ Không thể xóa file tạm:", unlinkError.message);
     }
@@ -111,9 +111,9 @@ export const updateAvatar = async (req, res) => {
     console.error("❌ Lỗi cập nhật avatar:", error);
     
     // Xóa file tạm nếu có lỗi
-    if (req.file && existsSync(req.file.path)) {
+    if (req.file && fs.existsSync(req.file.path)) {
       try {
-        await fs.unlink(req.file.path);
+        await fsPromises.unlink(req.file.path);
       } catch (unlinkError) {
         console.warn("⚠️ Không thể xóa file tạm:", unlinkError.message);
       }
