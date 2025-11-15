@@ -183,7 +183,7 @@ export function SigninForm({
           <div className="relative w-full h-full min-h-[500px] flex items-center justify-center">
             {/* Animated Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-purple-400/30 via-pink-400/30 to-blue-400/30 rounded-3xl blur-3xl animate-pulse"></div>
-            
+
             {/* Floating Elements */}
             <div className="absolute top-10 left-10 w-20 h-20 bg-purple-400/20 rounded-full blur-xl animate-float"></div>
             <div className="absolute bottom-20 right-10 w-32 h-32 bg-pink-400/20 rounded-full blur-xl animate-float-delayed"></div>
@@ -193,7 +193,7 @@ export function SigninForm({
               <div className="relative">
                 {/* Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-2xl scale-150 animate-pulse"></div>
-                
+
                 <svg
                   viewBox="0 0 400 500"
                   className="w-full h-full max-w-md drop-shadow-2xl relative z-10"
@@ -207,7 +207,7 @@ export function SigninForm({
                     opacity="0.1"
                     className="animate-pulse"
                   />
-                  
+
                   {/* Device/Phone */}
                   <g className="transform transition-transform duration-300 hover:scale-105">
                     <rect
@@ -227,7 +227,7 @@ export function SigninForm({
                       rx="20"
                       fill="#FFE5EB"
                     />
-                    
+
                     {/* Screen Content */}
                     <rect
                       x="110"
@@ -257,7 +257,7 @@ export function SigninForm({
                       fill="#8B5CF6"
                       opacity="0.5"
                     />
-                    
+
                     {/* Chat Bubbles */}
                     <ellipse
                       cx="180"
@@ -288,7 +288,7 @@ export function SigninForm({
                     </circle>
                     <circle cx="320" cy="150" r="15" fill="white" />
                   </g>
-                  
+
                   <g className="animate-float-delayed">
                     <circle cx="80" cy="350" r="20" fill="#EC4899" opacity="0.8">
                       <animate attributeName="cy" values="350;340;350" dur="3.5s" repeatCount="indefinite" />

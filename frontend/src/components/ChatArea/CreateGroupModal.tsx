@@ -6,6 +6,7 @@ import { groupService } from "@/services/groupService";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { socket } from "@/services/socket";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 
 // Helper function để build avatar URL
 const getAvatarUrl = (avatarUrl: string | undefined) => {
@@ -93,7 +94,9 @@ export default function CreateGroupModal({
                 if (preselect) setSelected([preselect]);
             } catch (err) {
                 console.error("Lỗi tải danh sách bạn bè:", err);
-                alert("Không thể tải danh sách bạn bè");
+                toast.error("Không thể tải danh sách bạn bè", {
+                    description: "Vui lòng thử lại sau",
+                });
             }
         };
         fetch();
@@ -138,12 +141,16 @@ export default function CreateGroupModal({
         console.log("🔵 handleCreate called:", { name, selected, loading });
 
         if (!name.trim()) {
-            alert("Vui lòng nhập tên nhóm");
+            toast.warning("Vui lòng nhập tên nhóm", {
+                description: "Tên nhóm không được để trống",
+            });
             return;
         }
 
         if (selected.length === 0) {
-            alert("Vui lòng chọn ít nhất một thành viên");
+            toast.warning("Vui lòng chọn ít nhất một thành viên", {
+                description: "Nhóm cần có ít nhất 2 thành viên",
+            });
             return;
         }
 
@@ -156,7 +163,9 @@ export default function CreateGroupModal({
             const created = await groupService.createGroup(payload);
             console.log("✅ Group created successfully:", created);
 
-            alert(`✅ Tạo nhóm thành công: ${created.name}`);
+            toast.success(`Tạo nhóm thành công: ${created.name}`, {
+                description: "Bạn có thể bắt đầu chat ngay bây giờ",
+            });
 
             // Callback để refresh danh sách nhóm và chọn nhóm vừa tạo
             if (onGroupCreated) {
@@ -177,7 +186,9 @@ export default function CreateGroupModal({
             console.error("❌ Error response:", err.response);
             console.error("❌ Error message:", err.message);
             const errorMsg = err.response?.data?.message || err.message || "Không thể tạo nhóm";
-            alert(`❌ Lỗi: ${errorMsg}\n\nChi tiết: ${JSON.stringify(err.response?.data || err.message, null, 2)}`);
+            toast.error("Lỗi tạo nhóm", {
+                description: errorMsg,
+            });
         } finally {
             setLoading(false);
         }
@@ -304,7 +315,12 @@ export default function CreateGroupModal({
                             if (!loading && name.trim() && selected.length > 0) {
                                 handleCreate();
                             } else {
-                                alert(`Vui lòng:\n${!name.trim() ? "- Nhập tên nhóm\n" : ""}${selected.length === 0 ? "- Chọn ít nhất 1 thành viên" : ""}`);
+                                const errors = [];
+                                if (!name.trim()) errors.push("Nhập tên nhóm");
+                                if (selected.length === 0) errors.push("Chọn ít nhất 1 thành viên");
+                                toast.warning("Vui lòng hoàn thành thông tin", {
+                                    description: errors.join(", "),
+                                });
                             }
                         }}
                         className={`px-4 py-2 rounded-lg text-white transition-colors ${loading || !name.trim() || selected.length === 0

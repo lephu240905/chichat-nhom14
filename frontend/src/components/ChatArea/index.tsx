@@ -16,14 +16,14 @@ import {
 import CreateGroupModal from "./CreateGroupModal";
 import CallModal from "./CallModal";
 import ChatCustomizeModal from "./ChatCustomizeModal";
+import { toast } from "sonner";
 
 // Helper function để build avatar URL
 const getAvatarUrl = (avatarUrl: string | undefined) => {
     if (!avatarUrl) return null;
     if (avatarUrl.startsWith("http")) return avatarUrl;
-    const baseURL = import.meta.env.MODE === "development"
-        ? "http://localhost:5001"
-        : "";
+    const baseURL =
+        import.meta.env.MODE === "development" ? "http://localhost:5001" : "";
     return `${baseURL}${avatarUrl}`;
 };
 
@@ -55,14 +55,21 @@ export default function ChatArea({
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const peerRef = useRef<RTCPeerConnection | null>(null);
     const localStreamRef = useRef<MediaStream | null>(null);
+    const remoteStreamRef = useRef<MediaStream | null>(null);
     const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
     const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
     const [incomingPayload, setIncomingPayload] = useState<any | null>(null);
     const [outgoing, setOutgoing] = useState(false);
     const [currentCallIsVideo, setCurrentCallIsVideo] = useState(false);
-    const [currentCallPartnerId, setCurrentCallPartnerId] = useState<string | null>(null); // Lưu ID người đang gọi
-    const [currentCallPartnerInfo, setCurrentCallPartnerInfo] = useState<{ name?: string; displayName?: string; avatar?: string } | null>(null); // Lưu thông tin người đang gọi
+    const [currentCallPartnerId, setCurrentCallPartnerId] = useState<
+        string | null
+    >(null); // Lưu ID người đang gọi
+    const [currentCallPartnerInfo, setCurrentCallPartnerInfo] = useState<{
+        name?: string;
+        displayName?: string;
+        avatar?: string;
+    } | null>(null); // Lưu thông tin người đang gọi
     const [callStartTime, setCallStartTime] = useState<number | null>(null); // Thời gian bắt đầu cuộc gọi
     const [callDuration, setCallDuration] = useState<number>(0); // Thời gian đã gọi (giây)
     const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -74,7 +81,6 @@ export default function ChatArea({
         if (!selectedChat || !user) return;
 
         const fetchData = async () => {
-
             // Fetch messages and user/group info
             try {
                 // First try to fetch as a user chat
@@ -97,14 +103,19 @@ export default function ChatArea({
 
                     // Load customization for private chat
                     try {
-                        const customizationRes = await api.get(`/chat-customizations/${selectedChat}`);
+                        const customizationRes = await api.get(
+                            `/chat-customizations/${selectedChat}`
+                        );
                         const customization = customizationRes.data;
 
                         // Load quick reaction
                         setChatQuickReaction(customization.quickReaction || "👍");
                         const quickReactionKey = `chat_quick_reaction_${selectedChat}`;
                         if (customization.quickReaction) {
-                            localStorage.setItem(quickReactionKey, customization.quickReaction);
+                            localStorage.setItem(
+                                quickReactionKey,
+                                customization.quickReaction
+                            );
                         } else {
                             localStorage.setItem(quickReactionKey, "👍");
                         }
@@ -168,7 +179,9 @@ export default function ChatArea({
 
                 // Load customization for group chat
                 try {
-                    const customizationRes = await api.get(`/chat-customizations/${selectedChat}?isGroup=true`);
+                    const customizationRes = await api.get(
+                        `/chat-customizations/${selectedChat}?isGroup=true`
+                    );
                     const customization = customizationRes.data;
 
                     // Load quick reaction
@@ -250,7 +263,11 @@ export default function ChatArea({
         socket.on("receiveMessage", handleReceiveMessage);
 
         // Listen for messages seen event
-        const handleMessagesSeen = (data: { receiverId?: string; groupId?: string; seenBy: string }) => {
+        const handleMessagesSeen = (data: {
+            receiverId?: string;
+            groupId?: string;
+            seenBy: string;
+        }) => {
             // data.seenBy là userId của người đã xem tin nhắn
             // Người nhận socket event này là user (người gửi tin nhắn)
             // Nếu đang chat với người vừa xem tin nhắn (selectedChat === data.seenBy)
@@ -262,12 +279,16 @@ export default function ChatArea({
                         // Nếu là tin nhắn của user gửi
                         if (senderId === user._id) {
                             const alreadySeen = msg.seenBy?.some(
-                                (seen: any) => String(seen.userId || seen) === String(data.seenBy)
+                                (seen: any) =>
+                                    String(seen.userId || seen) === String(data.seenBy)
                             );
                             if (!alreadySeen) {
                                 return {
                                     ...msg,
-                                    seenBy: [...(msg.seenBy || []), { userId: data.seenBy, seenAt: new Date() }],
+                                    seenBy: [
+                                        ...(msg.seenBy || []),
+                                        { userId: data.seenBy, seenAt: new Date() },
+                                    ],
                                 };
                             }
                         }
@@ -280,20 +301,26 @@ export default function ChatArea({
         socket.on("messagesSeen", handleMessagesSeen);
 
         // Listen for avatar updates từ bạn bè
-        socket.on("user_avatar_updated", (data: { userId: string; avatarUrl: string }) => {
-            // Cập nhật avatar trong header nếu đang chat với người đó
-            if (selectedChat === data.userId && friendInfo) {
-                setFriendInfo({ ...friendInfo, avatarUrl: data.avatarUrl });
+        socket.on(
+            "user_avatar_updated",
+            (data: { userId: string; avatarUrl: string }) => {
+                // Cập nhật avatar trong header nếu đang chat với người đó
+                if (selectedChat === data.userId && friendInfo) {
+                    setFriendInfo({ ...friendInfo, avatarUrl: data.avatarUrl });
+                }
             }
-        });
+        );
 
         // Listen for status changes từ bạn bè
-        socket.on("user_status_changed", (data: { userId: string; status: "online" | "offline" }) => {
-            // Cập nhật status trong header nếu đang chat với người đó
-            if (selectedChat === data.userId && friendInfo) {
-                setFriendInfo({ ...friendInfo, status: data.status });
+        socket.on(
+            "user_status_changed",
+            (data: { userId: string; status: "online" | "offline" }) => {
+                // Cập nhật status trong header nếu đang chat với người đó
+                if (selectedChat === data.userId && friendInfo) {
+                    setFriendInfo({ ...friendInfo, status: data.status });
+                }
             }
-        });
+        );
 
         const handleGroupCreated = (group: any) => {
             try {
@@ -301,7 +328,9 @@ export default function ChatArea({
                     m._id ? m._id : m
                 );
                 if (memberIds.includes(user._id)) {
-                    alert(`Bạn được thêm vào nhóm: ${group.name}`);
+                    toast.success(`Bạn được thêm vào nhóm: ${group.name}`, {
+                        description: "Bạn có thể bắt đầu chat ngay bây giờ",
+                    });
                     // optionally refresh messages if currently viewing group
                     if (selectedChat === group._id) {
                         // refetch messages for the group
@@ -327,10 +356,12 @@ export default function ChatArea({
                 // Cập nhật groupInfo ngay lập tức
                 setGroupInfo(group);
                 // Emit window event để các component khác cũng cập nhật
-                window.dispatchEvent(new CustomEvent('groupUpdated', { detail: group }));
+                window.dispatchEvent(
+                    new CustomEvent("groupUpdated", { detail: group })
+                );
             }
             // Refresh groups list trong sidebar
-            window.dispatchEvent(new CustomEvent('refreshGroups'));
+            window.dispatchEvent(new CustomEvent("refreshGroups"));
         };
 
         socket.off("groupUpdated");
@@ -347,7 +378,8 @@ export default function ChatArea({
                 setIncomingPayload({
                     ...data,
                     callerName: userData?.username || undefined,
-                    callerDisplayName: userData?.displayName || userData?.username || undefined,
+                    callerDisplayName:
+                        userData?.displayName || userData?.username || undefined,
                     callerAvatar: userData?.avatarUrl || undefined,
                 });
             } catch (err) {
@@ -417,7 +449,12 @@ export default function ChatArea({
 
     // Đảm bảo local video stream được gán khi vào cuộc gọi video
     useEffect(() => {
-        if (currentCallIsVideo && inCall && localStreamRef.current && localVideoRef.current) {
+        if (
+            currentCallIsVideo &&
+            inCall &&
+            localStreamRef.current &&
+            localVideoRef.current
+        ) {
             // Đảm bảo local video stream được gán
             if (!localVideoRef.current.srcObject) {
                 localVideoRef.current.srcObject = localStreamRef.current;
@@ -426,13 +463,44 @@ export default function ChatArea({
         }
     }, [currentCallIsVideo, inCall]);
 
+    // Attach remote composed stream to audio/video elements when refs mount
+    useEffect(() => {
+        try {
+            const remoteStream = remoteStreamRef.current;
+            if (!remoteStream) return;
+
+            if (remoteAudioRef.current && remoteAudioRef.current.srcObject !== remoteStream) {
+                remoteAudioRef.current.srcObject = remoteStream;
+                remoteAudioRef.current.muted = false;
+                try { remoteAudioRef.current.volume = 1; } catch { }
+                remoteAudioRef.current.play().then(() => {
+                    console.log('🔊 Remote audio playing (attached via useEffect)');
+                }).catch((err) => {
+                    console.warn('❌ Could not autoplay remote audio (useEffect):', err);
+                });
+            }
+
+            if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== remoteStream) {
+                remoteVideoRef.current.srcObject = remoteStream;
+                remoteVideoRef.current.play().then(() => {
+                    console.log('📹 Remote video playing (attached via useEffect)');
+                }).catch((err) => {
+                    console.warn('❌ Could not autoplay remote video (useEffect):', err);
+                });
+            }
+        } catch (e) {
+            console.warn('Error in remote attach useEffect', e);
+        }
+        // Run this effect when call state or video/audio UI might have changed
+    }, [inCall, currentCallIsVideo]);
+
     // Debug: Log state changes
     useEffect(() => {
         console.log("🔄 Call state changed:", {
             inCall,
             currentCallIsVideo,
             outgoing,
-            hasIncomingPayload: !!incomingPayload
+            hasIncomingPayload: !!incomingPayload,
         });
     }, [inCall, currentCallIsVideo, outgoing, incomingPayload]);
 
@@ -457,9 +525,13 @@ export default function ChatArea({
         const secs = seconds % 60;
 
         if (hours > 0) {
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            return `${hours.toString().padStart(2, "0")}:${minutes
+                .toString()
+                .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
         }
-        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        return `${minutes.toString().padStart(2, "0")}:${secs
+            .toString()
+            .padStart(2, "0")}`;
     };
 
     // cleanup helper
@@ -474,6 +546,14 @@ export default function ChatArea({
             if (localStreamRef.current) {
                 localStreamRef.current.getTracks().forEach((t) => t.stop());
                 localStreamRef.current = null;
+            }
+            if (remoteStreamRef.current) {
+                try {
+                    remoteStreamRef.current.getTracks().forEach((t) => t.stop());
+                } catch (e) {
+                    console.warn("Error stopping remoteStream tracks", e);
+                }
+                remoteStreamRef.current = null;
             }
             if (localVideoRef.current) {
                 localVideoRef.current.srcObject = null;
@@ -497,12 +577,40 @@ export default function ChatArea({
         // cleared incoming call state (if any)
     };
 
+    // User-triggered play helper to work around autoplay restrictions
+    const tryPlayRemoteAudio = async () => {
+        try {
+            if (remoteAudioRef.current) {
+                remoteAudioRef.current.muted = false;
+                await remoteAudioRef.current.play();
+                console.log("🔊 User-triggered play succeeded");
+            }
+            if (remoteVideoRef.current) {
+                try {
+                    await remoteVideoRef.current.play();
+                    console.log("📹 User-triggered remote video play succeeded");
+                } catch (e) {
+                    console.warn("Could not play remote video via user action", e);
+                }
+            }
+        } catch (e) {
+            console.warn("User-triggered play failed", e);
+        }
+    };
+
     const startCall = async (isVideo: boolean) => {
         if (!selectedChat || !user) return;
         try {
             const pc = new RTCPeerConnection({
                 iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
             });
+            // Log connection state changes for debugging
+            pc.onconnectionstatechange = () => {
+                console.log("PC connectionState:", pc.connectionState);
+            };
+            pc.oniceconnectionstatechange = () => {
+                console.log("PC iceConnectionState:", pc.iceConnectionState);
+            };
             peerRef.current = pc;
             setOutgoing(true);
             setCurrentCallIsVideo(isVideo);
@@ -535,12 +643,18 @@ export default function ChatArea({
                     break;
                 } catch (error: any) {
                     retryCount++;
-                    console.warn(`⚠️ Lỗi truy cập camera/mic (lần thử ${retryCount}/${maxRetries}):`, error);
+                    console.warn(
+                        `⚠️ Lỗi truy cập camera/mic (lần thử ${retryCount}/${maxRetries}):`,
+                        error
+                    );
 
-                    if (error.name === 'NotReadableError' || error.name === 'NotAllowedError') {
+                    if (
+                        error.name === "NotReadableError" ||
+                        error.name === "NotAllowedError"
+                    ) {
                         if (retryCount < maxRetries) {
                             // Đợi 1 giây trước khi thử lại
-                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
                             continue;
                         } else {
                             // Nếu là video call và không lấy được video, thử chỉ audio
@@ -551,15 +665,21 @@ export default function ChatArea({
                                         audio: true,
                                         video: false,
                                     });
-                                    alert("⚠️ Không thể truy cập camera. Cuộc gọi sẽ chỉ có âm thanh.");
+                                    toast.warning("Không thể truy cập camera", {
+                                        description: "Cuộc gọi sẽ chỉ có âm thanh",
+                                    });
                                     setCurrentCallIsVideo(false);
                                     break;
                                 } catch (audioError) {
                                     console.error("❌ Không thể lấy audio:", audioError);
-                                    throw new Error("Không thể truy cập camera hoặc microphone. Vui lòng kiểm tra quyền truy cập và đóng các ứng dụng khác đang sử dụng camera/mic.");
+                                    throw new Error(
+                                        "Không thể truy cập camera hoặc microphone. Vui lòng kiểm tra quyền truy cập và đóng các ứng dụng khác đang sử dụng camera/mic."
+                                    );
                                 }
                             } else {
-                                throw new Error("Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.");
+                                throw new Error(
+                                    "Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập."
+                                );
                             }
                         }
                     } else {
@@ -569,14 +689,16 @@ export default function ChatArea({
             }
 
             if (!localStream) {
-                throw new Error("Không thể truy cập camera/microphone sau nhiều lần thử.");
+                throw new Error(
+                    "Không thể truy cập camera/microphone sau nhiều lần thử."
+                );
             }
 
             localStreamRef.current = localStream;
             console.log("🎥 Local stream created:", {
                 audioTracks: localStream.getAudioTracks().length,
                 videoTracks: localStream.getVideoTracks().length,
-                isVideo
+                isVideo,
             });
 
             // Gán local stream vào video element để hiển thị
@@ -595,23 +717,50 @@ export default function ChatArea({
             });
 
             pc.ontrack = (e) => {
-                console.log("📹 Received remote track:", e.track.kind, e.streams);
-                const stream = e.streams[0];
+                try {
+                    console.log("📹 Received remote track:", e.track.kind, e.streams);
 
-                if (!stream) {
-                    console.warn("⚠️ No stream in ontrack event");
-                    return;
-                }
+                    // Some browsers provide streams in e.streams, others only provide track.
+                    // Build/append to a remote MediaStream to ensure audio tracks are available.
+                    if (!remoteStreamRef.current) {
+                        remoteStreamRef.current = new MediaStream();
+                    }
 
-                // Gán toàn bộ stream vào cả audio và video elements
-                // Browser sẽ tự động xử lý audio/video tracks
-                if (remoteAudioRef.current) {
-                    remoteAudioRef.current.srcObject = stream;
-                    console.log("🔊 Audio stream attached to remoteAudioRef");
-                }
-                if (remoteVideoRef.current) {
-                    remoteVideoRef.current.srcObject = stream;
-                    console.log("📹 Video stream attached to remoteVideoRef");
+                    // If streams provided, add their tracks; otherwise add the single incoming track
+                    if (e.streams && e.streams.length > 0) {
+                        const s = e.streams[0];
+                        s.getTracks().forEach((t) => remoteStreamRef.current!.addTrack(t));
+                    } else {
+                        remoteStreamRef.current.addTrack(e.track);
+                    }
+
+                    // Attach the composed remote stream to audio/video elements
+                    if (remoteAudioRef.current) {
+                        remoteAudioRef.current.srcObject = remoteStreamRef.current;
+                        remoteAudioRef.current.muted = false;
+                        try {
+                            remoteAudioRef.current.volume = 1;
+                        } catch { }
+                        remoteAudioRef.current
+                            .play()
+                            .then(() => console.log("🔊 Remote audio playing"))
+                            .catch((err) =>
+                                console.warn("❌ Could not autoplay remote audio:", err)
+                            );
+                        console.log("🔊 Audio stream attached to remoteAudioRef");
+                    }
+                    if (remoteVideoRef.current) {
+                        remoteVideoRef.current.srcObject = remoteStreamRef.current;
+                        remoteVideoRef.current
+                            .play()
+                            .then(() => console.log("📹 Remote video playing"))
+                            .catch((err) =>
+                                console.warn("❌ Could not autoplay remote video:", err)
+                            );
+                        console.log("📹 Video stream attached to remoteVideoRef");
+                    }
+                } catch (err) {
+                    console.error("Error in ontrack handler:", err);
                 }
             };
 
@@ -626,7 +775,12 @@ export default function ChatArea({
             };
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
-            console.log("📞 Offer created and sent to:", selectedChat, "isVideo:", isVideo);
+            console.log(
+                "📞 Offer created and sent to:",
+                selectedChat,
+                "isVideo:",
+                isVideo
+            );
 
             socket.emit("callUser", {
                 to: selectedChat,
@@ -637,8 +791,11 @@ export default function ChatArea({
             // outgoing modal shown; wait for answer to set inCall
         } catch (e: any) {
             console.error("❌ Lỗi khi bắt đầu gọi:", e);
-            const errorMessage = e.message || "Lỗi không xác định khi bắt đầu cuộc gọi";
-            alert(`❌ ${errorMessage}`);
+            const errorMessage =
+                e.message || "Lỗi không xác định khi bắt đầu cuộc gọi";
+            toast.error("Lỗi cuộc gọi", {
+                description: errorMessage,
+            });
             cleanupCall();
         }
     };
@@ -648,12 +805,24 @@ export default function ChatArea({
             const pc = new RTCPeerConnection({
                 iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
             });
+            // Log connection state changes for debugging
+            pc.onconnectionstatechange = () => {
+                console.log("PC connectionState (answer):", pc.connectionState);
+            };
+            pc.oniceconnectionstatechange = () => {
+                console.log("PC iceConnectionState (answer):", pc.iceConnectionState);
+            };
             peerRef.current = pc;
             // Set state ngay lập tức để UI cập nhật
             setCurrentCallIsVideo(isVideo);
             setCurrentCallPartnerId(from); // Lưu ID người đã gọi (bên nhận)
             // Thông tin caller đã được lưu trong currentCallPartnerInfo từ onAccept
-            console.log("📹 Set currentCallIsVideo to:", isVideo, "call partner:", from);
+            console.log(
+                "📹 Set currentCallIsVideo to:",
+                isVideo,
+                "call partner:",
+                from
+            );
 
             // Thử lấy media stream với retry logic
             let localStream: MediaStream | null = null;
@@ -669,12 +838,18 @@ export default function ChatArea({
                     break;
                 } catch (error: any) {
                     retryCount++;
-                    console.warn(`⚠️ Lỗi truy cập camera/mic khi trả lời (lần thử ${retryCount}/${maxRetries}):`, error);
+                    console.warn(
+                        `⚠️ Lỗi truy cập camera/mic khi trả lời (lần thử ${retryCount}/${maxRetries}):`,
+                        error
+                    );
 
-                    if (error.name === 'NotReadableError' || error.name === 'NotAllowedError') {
+                    if (
+                        error.name === "NotReadableError" ||
+                        error.name === "NotAllowedError"
+                    ) {
                         if (retryCount < maxRetries) {
                             // Đợi 1 giây trước khi thử lại
-                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
                             continue;
                         } else {
                             // Nếu là video call và không lấy được video, thử chỉ audio
@@ -685,15 +860,21 @@ export default function ChatArea({
                                         audio: true,
                                         video: false,
                                     });
-                                    alert("⚠️ Không thể truy cập camera. Cuộc gọi sẽ chỉ có âm thanh.");
+                                    toast.warning("Không thể truy cập camera", {
+                                        description: "Cuộc gọi sẽ chỉ có âm thanh",
+                                    });
                                     setCurrentCallIsVideo(false);
                                     break;
                                 } catch (audioError) {
                                     console.error("❌ Không thể lấy audio:", audioError);
-                                    throw new Error("Không thể truy cập camera hoặc microphone. Vui lòng kiểm tra quyền truy cập và đóng các ứng dụng khác đang sử dụng camera/mic.");
+                                    throw new Error(
+                                        "Không thể truy cập camera hoặc microphone. Vui lòng kiểm tra quyền truy cập và đóng các ứng dụng khác đang sử dụng camera/mic."
+                                    );
                                 }
                             } else {
-                                throw new Error("Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.");
+                                throw new Error(
+                                    "Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập."
+                                );
                             }
                         }
                     } else {
@@ -703,14 +884,16 @@ export default function ChatArea({
             }
 
             if (!localStream) {
-                throw new Error("Không thể truy cập camera/microphone sau nhiều lần thử.");
+                throw new Error(
+                    "Không thể truy cập camera/microphone sau nhiều lần thử."
+                );
             }
 
             localStreamRef.current = localStream;
             console.log("🎥 Local stream created (answer):", {
                 audioTracks: localStream.getAudioTracks().length,
                 videoTracks: localStream.getVideoTracks().length,
-                isVideo
+                isVideo,
             });
 
             // Gán local stream vào video element để hiển thị
@@ -719,33 +902,72 @@ export default function ChatArea({
                 setTimeout(() => {
                     if (localVideoRef.current) {
                         localVideoRef.current.srcObject = localStream;
-                        console.log("📹 Local video stream attached to localVideoRef (answer)");
+                        console.log(
+                            "📹 Local video stream attached to localVideoRef (answer)"
+                        );
                     }
                 }, 100);
             }
             localStream.getTracks().forEach((t) => {
                 pc.addTrack(t, localStream);
-                console.log("➕ Added track to peer connection (answer):", t.kind, t.enabled);
+                console.log(
+                    "➕ Added track to peer connection (answer):",
+                    t.kind,
+                    t.enabled
+                );
             });
 
             pc.ontrack = (e) => {
-                console.log("📹 Received remote track (answer):", e.track.kind, e.streams);
-                const stream = e.streams[0];
+                try {
+                    console.log(
+                        "📹 Received remote track (answer):",
+                        e.track.kind,
+                        e.streams
+                    );
 
-                if (!stream) {
-                    console.warn("⚠️ No stream in ontrack event (answer)");
-                    return;
-                }
+                    if (!remoteStreamRef.current) {
+                        remoteStreamRef.current = new MediaStream();
+                    }
 
-                // Gán toàn bộ stream vào cả audio và video elements
-                // Browser sẽ tự động xử lý audio/video tracks
-                if (remoteAudioRef.current) {
-                    remoteAudioRef.current.srcObject = stream;
-                    console.log("🔊 Audio stream attached to remoteAudioRef (answer)");
-                }
-                if (remoteVideoRef.current) {
-                    remoteVideoRef.current.srcObject = stream;
-                    console.log("📹 Video stream attached to remoteVideoRef (answer)");
+                    if (e.streams && e.streams.length > 0) {
+                        const s = e.streams[0];
+                        s.getTracks().forEach((t) => remoteStreamRef.current!.addTrack(t));
+                    } else {
+                        remoteStreamRef.current.addTrack(e.track);
+                    }
+
+                    if (remoteAudioRef.current) {
+                        remoteAudioRef.current.srcObject = remoteStreamRef.current;
+                        remoteAudioRef.current.muted = false;
+                        try {
+                            remoteAudioRef.current.volume = 1;
+                        } catch { }
+                        remoteAudioRef.current
+                            .play()
+                            .then(() =>
+                                console.log("🔊 Remote audio playing (answer)")
+                            )
+                            .catch((err) =>
+                                console.warn("❌ Could not autoplay remote audio (answer):", err)
+                            );
+                        console.log(
+                            "🔊 Audio stream attached to remoteAudioRef (answer)"
+                        );
+                    }
+                    if (remoteVideoRef.current) {
+                        remoteVideoRef.current.srcObject = remoteStreamRef.current;
+                        remoteVideoRef.current
+                            .play()
+                            .then(() => console.log("📹 Remote video playing (answer)"))
+                            .catch((err) =>
+                                console.warn("❌ Could not autoplay remote video (answer):", err)
+                            );
+                        console.log(
+                            "📹 Video stream attached to remoteVideoRef (answer)"
+                        );
+                    }
+                } catch (err) {
+                    console.error("Error in ontrack handler (answer):", err);
                 }
             };
 
@@ -771,8 +993,11 @@ export default function ChatArea({
             console.log("📞 Call answered, inCall set to true");
         } catch (e: any) {
             console.error("❌ Lỗi trả lời cuộc gọi:", e);
-            const errorMessage = e.message || "Lỗi không xác định khi trả lời cuộc gọi";
-            alert(`❌ ${errorMessage}`);
+            const errorMessage =
+                e.message || "Lỗi không xác định khi trả lời cuộc gọi";
+            toast.error("Lỗi cuộc gọi", {
+                description: errorMessage,
+            });
             cleanupCall();
             setIncomingPayload(null);
         }
@@ -782,7 +1007,8 @@ export default function ChatArea({
         try {
             // Xác định người nhận endCall signal
             // Ưu tiên: currentCallPartnerId > incomingPayload.from > selectedChat
-            const recipientId = currentCallPartnerId || incomingPayload?.from || selectedChat;
+            const recipientId =
+                currentCallPartnerId || incomingPayload?.from || selectedChat;
 
             // Luôn gửi endCall event cho bên kia, kể cả khi không có peer connection
             if (recipientId && user?._id) {
@@ -826,7 +1052,10 @@ export default function ChatArea({
         };
 
         // Listen socket event (remote changes từ bạn bè)
-        const handleSocketThemeChange = (data: { chatId: string; theme: string | null }) => {
+        const handleSocketThemeChange = (data: {
+            chatId: string;
+            theme: string | null;
+        }) => {
             // data.chatId là userId của người gửi, selectedChat là userId của người đang chat
             // Nếu đang chat với người gửi event, thì cập nhật theme
             if (data.chatId === selectedChat) {
@@ -842,11 +1071,17 @@ export default function ChatArea({
             }
         };
 
-        window.addEventListener('chatThemeChanged', handleThemeChange as EventListener);
+        window.addEventListener(
+            "chatThemeChanged",
+            handleThemeChange as EventListener
+        );
         socket.on("chatThemeChanged", handleSocketThemeChange);
 
         return () => {
-            window.removeEventListener('chatThemeChanged', handleThemeChange as EventListener);
+            window.removeEventListener(
+                "chatThemeChanged",
+                handleThemeChange as EventListener
+            );
             socket.off("chatThemeChanged", handleSocketThemeChange);
             socket.off("groupUpdated");
             socket.off("leftGroup");
@@ -860,7 +1095,10 @@ export default function ChatArea({
             if (!selectedChat || !isGroup) return;
 
             const updatedGroup = customEvent.detail;
-            if (updatedGroup && (updatedGroup._id === selectedChat || updatedGroup.id === selectedChat)) {
+            if (
+                updatedGroup &&
+                (updatedGroup._id === selectedChat || updatedGroup.id === selectedChat)
+            ) {
                 // Cập nhật groupInfo từ event hoặc fetch lại
                 if (updatedGroup.name) {
                     setGroupInfo(updatedGroup);
@@ -876,9 +1114,9 @@ export default function ChatArea({
             }
         };
 
-        window.addEventListener('groupUpdated', handleGroupUpdated);
+        window.addEventListener("groupUpdated", handleGroupUpdated);
         return () => {
-            window.removeEventListener('groupUpdated', handleGroupUpdated);
+            window.removeEventListener("groupUpdated", handleGroupUpdated);
         };
     }, [selectedChat, isGroup]);
 
@@ -887,23 +1125,29 @@ export default function ChatArea({
         const handleCustomizationChange = (e: CustomEvent) => {
             if (!selectedChat || e.detail.chatId !== selectedChat) return;
 
-            if (e.detail.type === 'nickname') {
+            if (e.detail.type === "nickname") {
                 setChatNickname(e.detail.value);
                 console.log("Nickname updated:", e.detail.value);
             }
-            if (e.detail.type === 'theme') {
+            if (e.detail.type === "theme") {
                 setChatTheme(e.detail.value);
                 console.log("Theme updated:", e.detail.value);
             }
-            if (e.detail.type === 'quickReaction') {
+            if (e.detail.type === "quickReaction") {
                 setChatQuickReaction(e.detail.value || "👍");
                 console.log("Quick reaction updated:", e.detail.value);
             }
         };
 
-        window.addEventListener('chatCustomizationChanged', handleCustomizationChange as EventListener);
+        window.addEventListener(
+            "chatCustomizationChanged",
+            handleCustomizationChange as EventListener
+        );
         return () => {
-            window.removeEventListener('chatCustomizationChanged', handleCustomizationChange as EventListener);
+            window.removeEventListener(
+                "chatCustomizationChanged",
+                handleCustomizationChange as EventListener
+            );
         };
     }, [selectedChat]);
 
@@ -913,7 +1157,7 @@ export default function ChatArea({
 
         const handleSocketCustomizationChange = (data: {
             chatId: string;
-            type: 'nickname' | 'theme' | 'quickReaction';
+            type: "nickname" | "theme" | "quickReaction";
             value: any;
             isGroup?: boolean;
         }) => {
@@ -922,7 +1166,7 @@ export default function ChatArea({
 
             console.log("📡 Socket customization changed:", data);
 
-            if (data.type === 'nickname') {
+            if (data.type === "nickname") {
                 setChatNickname(data.value);
                 // Cập nhật localStorage
                 const key = `chat_nickname_${selectedChat}`;
@@ -931,7 +1175,7 @@ export default function ChatArea({
                 } else {
                     localStorage.removeItem(key);
                 }
-            } else if (data.type === 'theme') {
+            } else if (data.type === "theme") {
                 setChatTheme(data.value);
                 // Cập nhật localStorage
                 const key = `chat_theme_${selectedChat}`;
@@ -940,7 +1184,7 @@ export default function ChatArea({
                 } else {
                     localStorage.removeItem(key);
                 }
-            } else if (data.type === 'quickReaction') {
+            } else if (data.type === "quickReaction") {
                 setChatQuickReaction(data.value || "👍");
                 // Cập nhật localStorage
                 const key = `chat_quick_reaction_${selectedChat}`;
@@ -948,13 +1192,15 @@ export default function ChatArea({
             }
 
             // Emit window event để các component khác cũng cập nhật
-            window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
-                detail: {
-                    chatId: data.chatId,
-                    type: data.type,
-                    value: data.value,
-                }
-            }));
+            window.dispatchEvent(
+                new CustomEvent("chatCustomizationChanged", {
+                    detail: {
+                        chatId: data.chatId,
+                        type: data.type,
+                        value: data.value,
+                    },
+                })
+            );
         };
 
         socket.on("chatCustomizationChanged", handleSocketCustomizationChange);
@@ -974,11 +1220,17 @@ export default function ChatArea({
     ) => {
         const messageContent = content || message;
         // Kiểm tra nội dung: với emoji, chỉ cần có content, không cần trim
-        const hasValidContent = messageType === "emoji"
-            ? (messageContent && messageContent.length > 0)
-            : (messageContent && messageContent.trim().length > 0);
+        const hasValidContent =
+            messageType === "emoji"
+                ? messageContent && messageContent.length > 0
+                : messageContent && messageContent.trim().length > 0;
 
-        if ((!hasValidContent && !imgUrl && !audioUrl && !gifUrl) || !selectedChat || !user) return;
+        if (
+            (!hasValidContent && !imgUrl && !audioUrl && !gifUrl) ||
+            !selectedChat ||
+            !user
+        )
+            return;
 
         try {
             const messageData: any = {
@@ -1016,7 +1268,9 @@ export default function ChatArea({
 
         // Validate image file
         if (!file.type.startsWith("image/")) {
-            alert("Vui lòng chọn file ảnh");
+            toast.warning("Vui lòng chọn file ảnh", {
+                description: "Chỉ chấp nhận file ảnh (jpg, png, gif, ...)",
+            });
             return;
         }
 
@@ -1029,14 +1283,13 @@ export default function ChatArea({
             });
 
             // Use baseURL from axios config
-            const baseURL = import.meta.env.MODE === "development"
-                ? "http://localhost:5001"
-                : "";
-            const imgUrl = `${baseURL}${uploadRes.data.url}`;
+            const imgUrl = uploadRes.data.url;
             await handleSend(message, "image", imgUrl);
         } catch (err) {
             console.error("Lỗi upload ảnh:", err);
-            alert("Lỗi khi upload ảnh");
+            toast.error("Lỗi khi upload ảnh", {
+                description: "Vui lòng thử lại sau",
+            });
         }
 
         // Reset input
@@ -1051,7 +1304,6 @@ export default function ChatArea({
         handleSend(chatQuickReaction, "emoji");
     };
 
-
     // Helper function to get theme colors as CSS values
     const getThemeColors = () => {
         if (!chatTheme) {
@@ -1059,7 +1311,14 @@ export default function ChatArea({
         }
 
         // Map of color names to Tailwind color values
-        const colorMap: { [key: string]: { light: string; lighter: string; dark: string; border: string } } = {
+        const colorMap: {
+            [key: string]: {
+                light: string;
+                lighter: string;
+                dark: string;
+                border: string;
+            };
+        } = {
             blue: {
                 light: "rgb(239, 246, 255)", // blue-50
                 lighter: "rgb(219, 234, 254)", // blue-100
@@ -1130,9 +1389,7 @@ export default function ChatArea({
             backgroundColor: isDark
                 ? rgbToRgba(colors.dark, 0.95) // 95% opacity
                 : rgbToRgba(colors.light, 0.95), // 95% opacity
-            borderColor: isDark
-                ? colors.dark
-                : colors.border,
+            borderColor: isDark ? colors.dark : colors.border,
         };
     };
 
@@ -1198,8 +1455,8 @@ export default function ChatArea({
                             />
                         ) : (
                             <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold shadow-lg ring-2 ring-white/20 transition-all duration-300 hover:scale-110">
-                                {((friendInfo?.displayName || friendInfo?.username)?.[0]
-                                )?.toUpperCase() || "?"}
+                                {(friendInfo?.displayName ||
+                                    friendInfo?.username)?.[0]?.toUpperCase() || "?"}
                             </div>
                         )}
                         {friendInfo?.status === "online" && !isGroup && (
@@ -1210,7 +1467,10 @@ export default function ChatArea({
                         <h2 className="font-semibold flex items-center gap-2">
                             {isGroup
                                 ? groupInfo?.name
-                                : chatNickname || friendInfo?.displayName || friendInfo?.username || "Đang tải..."}
+                                : chatNickname ||
+                                friendInfo?.displayName ||
+                                friendInfo?.username ||
+                                "Đang tải..."}
                         </h2>
                         <p
                             className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"
@@ -1255,19 +1515,29 @@ export default function ChatArea({
                                         console.log("🔵 More button clicked!", {
                                             selectedChat,
                                             isCustomizeOpen,
-                                            willSetTo: true
+                                            willSetTo: true,
                                         });
                                         setIsCustomizeOpen(true);
-                                        console.log("🔵 After setState, checking in next render...");
+                                        console.log(
+                                            "🔵 After setState, checking in next render..."
+                                        );
                                     }}
                                     className={`p-2.5 rounded-xl transition-all duration-300 ${isDark
                                             ? "hover:bg-gray-800 hover:shadow-md"
                                             : "hover:bg-gray-100 hover:shadow-md"
                                         }`}
                                     title="Tùy chỉnh đoạn chat"
-                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        cursor: "pointer",
+                                    }}
                                 >
-                                    <MoreHorizontal className="w-5 h-5" style={{ minWidth: '20px', minHeight: '20px' }} />
+                                    <MoreHorizontal
+                                        className="w-5 h-5"
+                                        style={{ minWidth: "20px", minHeight: "20px" }}
+                                    />
                                 </button>
                             </>
                         ) : (
@@ -1301,19 +1571,29 @@ export default function ChatArea({
                                         console.log("🔵 More button clicked!", {
                                             selectedChat,
                                             isCustomizeOpen,
-                                            willSetTo: true
+                                            willSetTo: true,
                                         });
                                         setIsCustomizeOpen(true);
-                                        console.log("🔵 After setState, checking in next render...");
+                                        console.log(
+                                            "🔵 After setState, checking in next render..."
+                                        );
                                     }}
                                     className={`p-2.5 rounded-xl transition-all duration-300 ${isDark
                                             ? "hover:bg-gray-800 hover:shadow-md"
                                             : "hover:bg-gray-100 hover:shadow-md"
                                         }`}
                                     title="Tùy chỉnh đoạn chat"
-                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        cursor: "pointer",
+                                    }}
                                 >
-                                    <MoreHorizontal className="w-5 h-5" style={{ minWidth: '20px', minHeight: '20px' }} />
+                                    <MoreHorizontal
+                                        className="w-5 h-5"
+                                        style={{ minWidth: "20px", minHeight: "20px" }}
+                                    />
                                 </button>
                                 <button
                                     onClick={handleOpenCreate}
@@ -1334,7 +1614,7 @@ export default function ChatArea({
                     preselect={selectedChat}
                     onGroupCreated={(groupId?: string) => {
                         // Refresh groups if needed
-                        window.dispatchEvent(new CustomEvent('refreshGroups'));
+                        window.dispatchEvent(new CustomEvent("refreshGroups"));
                         // Tự động chọn nhóm vừa tạo
                         if (groupId && onSelectChat) {
                             onSelectChat(groupId);
@@ -1366,7 +1646,8 @@ export default function ChatArea({
                             const senderId = msg.senderId?._id || msg.senderId;
                             if (senderId === user._id) {
                                 const hasBeenSeen = msg.seenBy?.some(
-                                    (seen: any) => String(seen.userId || seen) === String(selectedChat)
+                                    (seen: any) =>
+                                        String(seen.userId || seen) === String(selectedChat)
                                 );
                                 if (hasBeenSeen) {
                                     lastSeenMessageId = msg._id || msg.id || null;
@@ -1382,20 +1663,24 @@ export default function ChatArea({
                         const isOwn = senderId === user._id;
                         const showAvatar =
                             idx === 0 ||
-                            (messages[idx - 1].senderId?._id || messages[idx - 1].senderId) !== senderId;
+                            (messages[idx - 1].senderId?._id ||
+                                messages[idx - 1].senderId) !== senderId;
 
                         // Kiểm tra xem đây có phải tin nhắn cuối cùng đã được xem không
-                        const isLastSeenMessage = isOwn && !isGroup && lastSeenMessageId &&
+                        const isLastSeenMessage =
+                            isOwn &&
+                            !isGroup &&
+                            lastSeenMessageId &&
                             (msg._id === lastSeenMessageId || msg.id === lastSeenMessageId);
 
                         // Lấy thông tin sender để hiển thị (cho group chat) hoặc friendInfo (cho private chat)
-                        const displaySender = isGroup ? senderInfo : friendInfo;
+                        // const displaySender = isGroup ? senderInfo : friendInfo;
                         const senderAvatarUrl = isGroup
-                            ? (senderInfo?.avatarUrl || null)
-                            : (friendInfo?.avatarUrl || null);
+                            ? senderInfo?.avatarUrl || null
+                            : friendInfo?.avatarUrl || null;
                         const senderName = isGroup
-                            ? (senderInfo?.displayName || senderInfo?.username || "?")
-                            : (friendInfo?.displayName || friendInfo?.username || "?");
+                            ? senderInfo?.displayName || senderInfo?.username || "?"
+                            : friendInfo?.displayName || friendInfo?.username || "?";
 
                         return (
                             <div
@@ -1454,7 +1739,8 @@ export default function ChatArea({
                                                     alt="Message image"
                                                     className="max-w-xs rounded-lg mb-2"
                                                     onError={(e) => {
-                                                        (e.target as HTMLImageElement).src = "placeholder.png";
+                                                        (e.target as HTMLImageElement).src =
+                                                            "placeholder.png";
                                                     }}
                                                 />
                                             )}
@@ -1477,18 +1763,21 @@ export default function ChatArea({
                                                 </audio>
                                             )}
                                             {/* Hiển thị text content hoặc emoji lớn */}
-                                            {msg.content && (
-                                                msg.messageType === "emoji" && msg.content.trim().length <= 10 ? (
+                                            {msg.content &&
+                                                (msg.messageType === "emoji" &&
+                                                    msg.content.trim().length <= 10 ? (
                                                     // Hiển thị emoji lớn nếu là quick reaction (cho phép emoji kết hợp)
                                                     <div className="text-4xl text-center py-2">
                                                         {msg.content}
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm break-words">{msg.content}</p>
-                                                )
-                                            )}
+                                                ))}
                                         </div>
-                                        <div className={`flex items-center gap-1 mt-1 ${isOwn ? "justify-end" : "justify-start"}`}>
+                                        <div
+                                            className={`flex items-center gap-1 mt-1 ${isOwn ? "justify-end" : "justify-start"
+                                                }`}
+                                        >
                                             {msg.createdAt && (
                                                 <span
                                                     className={`text-[10px] ${isDark ? "text-gray-500" : "text-gray-400"
@@ -1588,7 +1877,11 @@ export default function ChatArea({
             </div>
             {/* Call modal (incoming / outgoing) - ẩn khi đang trong cuộc gọi video */}
             <CallModal
-                open={(!!incomingPayload || (outgoing && !inCall) || (inCall && !currentCallIsVideo))}
+                open={
+                    !!incomingPayload ||
+                    (outgoing && !inCall) ||
+                    (inCall && !currentCallIsVideo)
+                }
                 outgoing={outgoing}
                 inCall={inCall}
                 callerName={
@@ -1633,11 +1926,7 @@ export default function ChatArea({
                         setCurrentCallIsVideo(isVideo);
                         setIncomingPayload(null);
                         // Gọi answerCall
-                        answerCall(
-                            incomingPayload.from,
-                            incomingPayload.offer,
-                            isVideo
-                        );
+                        answerCall(incomingPayload.from, incomingPayload.offer, isVideo);
                     }
                 }}
                 onReject={() => {
@@ -1671,7 +1960,7 @@ export default function ChatArea({
                         onLoadedMetadata={() => {
                             console.log("✅ Remote video loaded");
                             if (remoteVideoRef.current) {
-                                remoteVideoRef.current.play().catch(e => {
+                                remoteVideoRef.current.play().catch((e) => {
                                     console.error("❌ Error playing remote video:", e);
                                 });
                             }
@@ -1692,7 +1981,7 @@ export default function ChatArea({
                             onLoadedMetadata={() => {
                                 console.log("✅ Local video loaded");
                                 if (localVideoRef.current) {
-                                    localVideoRef.current.play().catch(e => {
+                                    localVideoRef.current.play().catch((e) => {
                                         console.error("❌ Error playing local video:", e);
                                     });
                                 }
@@ -1723,7 +2012,7 @@ export default function ChatArea({
                         onLoadedMetadata={() => {
                             console.log("✅ Remote audio loaded");
                             if (remoteAudioRef.current) {
-                                remoteAudioRef.current.play().catch(e => {
+                                remoteAudioRef.current.play().catch((e) => {
                                     console.error("❌ Error playing remote audio:", e);
                                 });
                             }
@@ -1756,7 +2045,7 @@ export default function ChatArea({
                     onLoadedMetadata={() => {
                         console.log("✅ Remote audio loaded (audio call)");
                         if (remoteAudioRef.current) {
-                            remoteAudioRef.current.play().catch(e => {
+                            remoteAudioRef.current.play().catch((e) => {
                                 console.error("❌ Error playing remote audio:", e);
                             });
                         }
@@ -1765,6 +2054,19 @@ export default function ChatArea({
                         console.error("❌ Remote audio error:", e);
                     }}
                 />
+            )}
+
+            {/* If audio-only and inCall, show an explicit user-play button to satisfy autoplay policies */}
+            {!currentCallIsVideo && inCall && (
+                <div className="fixed bottom-24 right-6 z-50">
+                    <button
+                        onClick={tryPlayRemoteAudio}
+                        className="px-4 py-2 rounded-lg bg-blue-600 text-white shadow-lg hover:bg-blue-700"
+                        title="Bật âm thanh"
+                    >
+                        Bật âm
+                    </button>
+                </div>
             )}
         </div>
     );
