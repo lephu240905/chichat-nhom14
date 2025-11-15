@@ -1,5 +1,6 @@
 import cloudinary from "../libs/cloudinary.js";
-import fs from "fs";
+import fs from "fs/promises";
+import { existsSync } from "fs";
 
 // Upload ảnh
 export const uploadImage = async (req, res) => {
@@ -9,6 +10,8 @@ export const uploadImage = async (req, res) => {
     }
 
     console.log("📤 Đang upload ảnh lên Cloudinary:", req.file.originalname);
+    console.log("📂 File path:", req.file.path);
+    console.log("📏 File size:", req.file.size, "bytes");
 
     // Upload file tạm thời từ multer lên Cloudinary với các options tối ưu
     const result = await cloudinary.uploader.upload(req.file.path, {
@@ -22,7 +25,11 @@ export const uploadImage = async (req, res) => {
     });
 
     // Xóa file tạm sau khi upload thành công
-    fs.unlinkSync(req.file.path);
+    try {
+      await fs.unlink(req.file.path);
+    } catch (unlinkError) {
+      console.warn("⚠️ Không thể xóa file tạm:", unlinkError.message);
+    }
 
     console.log("✅ Upload ảnh thành công:", result.secure_url);
 
@@ -33,18 +40,21 @@ export const uploadImage = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Lỗi upload ảnh:", error);
-    
+
     // Xóa file tạm nếu có lỗi
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+    if (req.file && existsSync(req.file.path)) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.warn("⚠️ Không thể xóa file tạm:", unlinkError.message);
+      }
     }
 
     // Trả về thông báo lỗi chi tiết hơn
     const errorMessage = error.message || "Lỗi upload ảnh";
-    res.status(500).json({ 
+    res.status(500).json({
       message: errorMessage,
       error: process.env.NODE_ENV === "development" ? error.toString() : undefined
     });
   }
 };
-

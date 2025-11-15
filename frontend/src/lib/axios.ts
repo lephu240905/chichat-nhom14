@@ -1,7 +1,6 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import axios from "axios";
 
-<<<<<<< HEAD
 // ✅ Tự động phát hiện IP và cấu hình base URL
 const getBaseURL = () => {
   if (import.meta.env.MODE === "development") {
@@ -24,14 +23,6 @@ const BASE_URL = getBaseURL();
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
-=======
-const BASE_URL =
-    import.meta.env.MODE === "development" ? "http://localhost:5001/api" : "/api";
-
-const api = axios.create({
-    baseURL: BASE_URL,
-    withCredentials: true,
->>>>>>> dcc3bef64d2264f70fa4bb3febdee3fbe740af8e
 });
 
 // Gắn access token vào header

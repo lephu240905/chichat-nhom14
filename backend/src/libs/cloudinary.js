@@ -21,8 +21,6 @@ cloudinary.config({
 // Debug log để kiểm tra (có thể bỏ sau khi fix xong)
 if (!process.env.CLOUDINARY_API_KEY) {
   console.error("⚠️ CLOUDINARY_API_KEY không được tìm thấy trong biến môi trường!");
-  console.error("📁 Đường dẫn .env:", path.join(__dirname, "../../.env"));
-  console.error("🔍 Kiểm tra file .env có tồn tại và chứa CLOUDINARY_API_KEY không");
 } else {
   console.log("✅ Cloudinary đã được cấu hình thành công");
 }

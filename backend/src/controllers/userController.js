@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import cloudinary from "../libs/cloudinary.js";
-import fs from "fs";
+import fs from "fs/promises";
+import { existsSync } from "fs";
 
 export const authMe = async (req, res) => {
   try {
@@ -80,8 +81,10 @@ export const updateAvatar = async (req, res) => {
     });
 
     // Xóa file tạm sau khi upload thành công
-    if (fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+    try {
+      await fs.unlink(req.file.path);
+    } catch (unlinkError) {
+      console.warn("⚠️ Không thể xóa file tạm:", unlinkError.message);
     }
 
     console.log("✅ Upload avatar thành công:", result.secure_url);
@@ -108,8 +111,12 @@ export const updateAvatar = async (req, res) => {
     console.error("❌ Lỗi cập nhật avatar:", error);
     
     // Xóa file tạm nếu có lỗi
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+    if (req.file && existsSync(req.file.path)) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.warn("⚠️ Không thể xóa file tạm:", unlinkError.message);
+      }
     }
     
     res.status(500).json({ 

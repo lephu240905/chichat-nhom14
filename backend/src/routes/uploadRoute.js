@@ -9,7 +9,15 @@ const router = express.Router();
 router.post(
   "/image",
   protectedRoute,
-  uploadImageMw.single("image"),
+  (req, res, next) => {
+    uploadImageMw.single("image")(req, res, (err) => {
+      if (err) {
+        console.error("❌ Lỗi multer:", err.message);
+        return res.status(400).json({ message: err.message });
+      }
+      next();
+    });
+  },
   uploadImage
 );
 

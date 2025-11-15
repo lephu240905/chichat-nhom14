@@ -7,7 +7,15 @@ const router = express.Router();
 
 router.get("/me", protectedRoute, authMe);
 
-router.put("/me/avatar", protectedRoute, uploadAvatar.single("avatar"), updateAvatar);
+router.put("/me/avatar", protectedRoute, (req, res, next) => {
+  uploadAvatar.single("avatar")(req, res, (err) => {
+    if (err) {
+      console.error("❌ Lỗi multer avatar:", err.message);
+      return res.status(400).json({ message: err.message });
+    }
+    next();
+  });
+}, updateAvatar);
 
 router.get("/:id", getUserById);
 

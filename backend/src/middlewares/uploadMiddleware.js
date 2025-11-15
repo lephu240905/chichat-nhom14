@@ -59,7 +59,7 @@ const imageFilter = (req, file, cb) => {
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error("Chỉ chấp nhận file ảnh (jpeg, jpg, png, gif, webp)"));
+    cb(new Error("Chỉ chấp nhận file ảnh (jpeg, jpg, png, gif, webp)"), false);
   }
 };
 
@@ -69,12 +69,12 @@ const audioFilter = (req, file, cb) => {
   const extname = allowedTypes.test(
     path.extname(file.originalname).toLowerCase()
   );
-  const mimetype = allowedTypes.test(file.mimetype);
+  const mimetype = file.mimetype && allowedTypes.test(file.mimetype);
 
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error("Chỉ chấp nhận file audio (mp3, wav, ogg, m4a, webm)"));
+    cb(new Error("Chỉ chấp nhận file audio (mp3, wav, ogg, m4a, webm)"), false);
   }
 };
 
