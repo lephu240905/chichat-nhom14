@@ -29,7 +29,11 @@ const io = new Server(server, {
     origin:
       process.env.NODE_ENV === "production"
         ? "https://webchat-533n.onrender.com"
-        : ["http://localhost:5173", "http://localhost:5174"],
+        : [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://192.168.66.172:5173",
+          ],
     credentials: true,
   },
 });
@@ -74,7 +78,11 @@ io.on("connection", (socket) => {
 if (process.env.NODE_ENV !== "production") {
   app.use(
     cors({
-      origin: ["http://localhost:5173", "http://localhost:5174"],
+      origin: [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://192.168.66.172:5173",
+      ],
       credentials: true,
     })
   );

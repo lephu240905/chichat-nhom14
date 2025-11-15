@@ -1,10 +1,7 @@
 import express from "express";
 import { protectedRoute } from "../middlewares/authMiddleware.js";
-import {
-  uploadImage as uploadImageMw,
-  uploadAudio as uploadAudioMw,
-} from "../middlewares/uploadMiddleware.js";
-import { uploadImage, uploadAudio } from "../controllers/uploadController.js";
+import { uploadImage as uploadImageMw } from "../middlewares/uploadMiddleware.js";
+import { uploadImage } from "../controllers/uploadController.js";
 
 const router = express.Router();
 
@@ -15,7 +12,5 @@ router.post(
   uploadImageMw.single("image"),
   uploadImage
 );
-
-
 
 export default router;

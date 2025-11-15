@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { X, ChevronRight, Users, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/axios";
@@ -16,7 +16,7 @@ interface ChatCustomizeModalProps {
   onSelectChat?: ((chatId: string | null) => void) | ((chatId: string) => void);
 }
 
-export default function ChatCustomizeModal({
+function ChatCustomizeModal({
   isOpen,
   onClose,
   isDark,
@@ -40,45 +40,60 @@ export default function ChatCustomizeModal({
     { name: "Cam", color: "from-orange-500 to-orange-600" },
   ];
 
-  const quickReactionEmojis = ["👍", "👏", "❤️", "🔥", "🎉", "😂", "😍", "🥰", "😊", "😀", "❤️‍🔥", "💯", "👌", "🙌", "🤝"];
+  const quickReactionEmojis = [
+    "👍",
+    "👏",
+    "❤️",
+    "🔥",
+    "🎉",
+    "😂",
+    "😍",
+    "🥰",
+    "😊",
+    "😀",
+    "❤️‍🔥",
+    "💯",
+    "👌",
+    "🙌",
+    "🤝",
+  ];
 
-  // Debug log
-  console.log("ChatCustomizeModal render:", { isOpen, selectedChat });
-
+  // Early return if modal is not open
   if (!isOpen) {
-    console.log("Modal not open, returning null");
     return null;
   }
 
-  console.log("Modal is open, rendering...");
-
-  const handleThemeChange = async (theme: typeof themes[0]) => {
+  const handleThemeChange = async (theme: (typeof themes)[0]) => {
     if (!selectedChat || !userId) return;
-    
+
     try {
       // Lưu vào database với isGroup flag
       await api.put(`/chat-customizations/${selectedChat}`, {
         theme: theme.color,
         isGroup: isGroup,
       });
-      
+
       // Cũng lưu vào localStorage như cache
       const key = `chat_theme_${selectedChat}`;
       localStorage.setItem(key, theme.color);
-      
+
       setShowThemePicker(false);
       // Emit event để ChatArea có thể cập nhật theme
-      window.dispatchEvent(new CustomEvent('chatThemeChanged', { 
-        detail: { chatId: selectedChat, theme: theme.color } 
-      }));
+      window.dispatchEvent(
+        new CustomEvent("chatThemeChanged", {
+          detail: { chatId: selectedChat, theme: theme.color },
+        })
+      );
       // Emit storage change event để update UI
-      window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
-        detail: { 
-          chatId: selectedChat, 
-          type: 'theme',
-          value: theme.color 
-        }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("chatCustomizationChanged", {
+          detail: {
+            chatId: selectedChat,
+            type: "theme",
+            value: theme.color,
+          },
+        })
+      );
       toast.success(`Đã đổi chủ đề thành: ${theme.name}`, {
         description: "Chủ đề đã được cập nhật thành công",
       });
@@ -92,27 +107,29 @@ export default function ChatCustomizeModal({
 
   const handleQuickReactionChange = async (emoji: string) => {
     if (!selectedChat || !userId) return;
-    
+
     try {
       // Lưu vào database
       await api.put(`/chat-customizations/${selectedChat}`, {
         quickReaction: emoji,
         isGroup: isGroup,
       });
-      
+
       // Cũng lưu vào localStorage như cache
       const key = `chat_quick_reaction_${selectedChat}`;
       localStorage.setItem(key, emoji);
-      
+
       setShowQuickReactionPicker(false);
       // Emit event để ChatArea có thể cập nhật quick reaction
-      window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
-        detail: { 
-          chatId: selectedChat, 
-          type: 'quickReaction',
-          value: emoji 
-        }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("chatCustomizationChanged", {
+          detail: {
+            chatId: selectedChat,
+            type: "quickReaction",
+            value: emoji,
+          },
+        })
+      );
       toast.success(`Đã đổi cảm xúc nhanh thành: ${emoji}`, {
         description: "Cảm xúc nhanh đã được cập nhật",
       });
@@ -126,31 +143,38 @@ export default function ChatCustomizeModal({
 
   const handleNicknameSave = async () => {
     if (!selectedChat || !userId) return;
-    
+
     try {
       if (isGroup) {
         // Đổi tên nhóm
         if (nickname.trim()) {
-          const response = await api.put(`/chat-customizations/${selectedChat}`, {
-            nickname: nickname.trim(),
-            isGroup: true,
-          });
-          
+          const response = await api.put(
+            `/chat-customizations/${selectedChat}`,
+            {
+              nickname: nickname.trim(),
+              isGroup: true,
+            }
+          );
+
           // Refresh group info từ response hoặc fetch lại
           if (response.data?.group) {
-            window.dispatchEvent(new CustomEvent('groupUpdated', { detail: response.data.group }));
+            window.dispatchEvent(
+              new CustomEvent("groupUpdated", { detail: response.data.group })
+            );
           } else {
             // Nếu không có trong response, fetch lại
             try {
               const groupRes = await api.get(`/groups/${selectedChat}`);
-              window.dispatchEvent(new CustomEvent('groupUpdated', { detail: groupRes.data }));
+              window.dispatchEvent(
+                new CustomEvent("groupUpdated", { detail: groupRes.data })
+              );
             } catch (fetchErr) {
               console.error("Lỗi fetch group info:", fetchErr);
             }
           }
-          
+
           // Refresh groups list trong sidebar
-          window.dispatchEvent(new CustomEvent('refreshGroups'));
+          window.dispatchEvent(new CustomEvent("refreshGroups"));
           toast.success(`Đã đổi tên nhóm thành: ${nickname.trim()}`, {
             description: "Tên nhóm đã được cập nhật thành công",
           });
@@ -162,17 +186,19 @@ export default function ChatCustomizeModal({
             nickname: nickname.trim(),
             isGroup: false,
           });
-          
+
           const key = `chat_nickname_${selectedChat}`;
           localStorage.setItem(key, nickname.trim());
-          
-          window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
-            detail: { 
-              chatId: selectedChat, 
-              type: 'nickname',
-              value: nickname.trim() 
-            }
-          }));
+
+          window.dispatchEvent(
+            new CustomEvent("chatCustomizationChanged", {
+              detail: {
+                chatId: selectedChat,
+                type: "nickname",
+                value: nickname.trim(),
+              },
+            })
+          );
           toast.success(`Đã lưu biệt danh: ${nickname.trim()}`, {
             description: "Biệt danh đã được lưu thành công",
           });
@@ -181,23 +207,25 @@ export default function ChatCustomizeModal({
             nickname: null,
             isGroup: false,
           });
-          
+
           const key = `chat_nickname_${selectedChat}`;
           localStorage.removeItem(key);
-          
-          window.dispatchEvent(new CustomEvent('chatCustomizationChanged', {
-            detail: { 
-              chatId: selectedChat, 
-              type: 'nickname',
-              value: null 
-            }
-          }));
+
+          window.dispatchEvent(
+            new CustomEvent("chatCustomizationChanged", {
+              detail: {
+                chatId: selectedChat,
+                type: "nickname",
+                value: null,
+              },
+            })
+          );
           toast.success("Đã xóa biệt danh", {
             description: "Biệt danh đã được xóa thành công",
           });
         }
       }
-      
+
       setShowNicknameEditor(false);
       setNickname("");
     } catch (error: any) {
@@ -210,17 +238,17 @@ export default function ChatCustomizeModal({
 
   const handleLeaveGroup = async () => {
     if (!selectedChat || !isGroup) return;
-    
+
     if (!confirm("Bạn có chắc chắn muốn rời nhóm này không?")) {
       return;
     }
-    
+
     try {
       await api.post(`/groups/${selectedChat}/leave`);
       toast.success("Đã rời nhóm thành công", {
         description: "Bạn đã rời khỏi nhóm này",
       });
-      window.dispatchEvent(new CustomEvent('refreshGroups'));
+      window.dispatchEvent(new CustomEvent("refreshGroups"));
       if (onSelectChat) {
         // Handle both function signatures
         try {
@@ -239,44 +267,40 @@ export default function ChatCustomizeModal({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 flex items-center justify-center"
-      onClick={() => {
-        console.log("🟡 Modal background clicked");
-        onClose();
-      }}
-      style={{ 
+      onClick={onClose}
+      style={{
         zIndex: 99999,
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <div
-        onClick={(e) => {
-          e.stopPropagation();
-          console.log("🟢 Modal content clicked");
-        }}
+        onClick={(e) => e.stopPropagation()}
         className={`w-full max-w-sm rounded-lg shadow-2xl ${
           isDark ? "bg-gray-800" : "bg-white"
         }`}
-        style={{ 
+        style={{
           zIndex: 100000,
-          position: 'relative',
-          maxWidth: '28rem',
-          margin: '0 auto'
+          position: "relative",
+          maxWidth: "28rem",
+          margin: "0 auto",
         }}
       >
         {/* Header */}
         <div
           className={`flex items-center justify-between p-4 border-b ${
-            isDark ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-gray-50"
+            isDark
+              ? "border-gray-700 bg-gray-900"
+              : "border-gray-200 bg-gray-50"
           }`}
         >
           <h3
@@ -402,10 +426,20 @@ export default function ChatCustomizeModal({
                 }`}
               >
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <span className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>Aa</span>
+                  <span
+                    className={`text-lg font-semibold ${
+                      isDark ? "text-white" : "text-gray-900"
+                    }`}
+                  >
+                    Aa
+                  </span>
                 </div>
                 <span className="flex-1 text-left">Đặt tên nhóm</span>
-                <ChevronRight className={`w-5 h-5 ${isDark ? "text-gray-400" : "text-gray-400"}`} />
+                <ChevronRight
+                  className={`w-5 h-5 ${
+                    isDark ? "text-gray-400" : "text-gray-400"
+                  }`}
+                />
               </button>
               {showNicknameEditor && (
                 <div
@@ -447,7 +481,9 @@ export default function ChatCustomizeModal({
                   // Load existing nickname từ database
                   if (selectedChat && userId) {
                     try {
-                      const res = await api.get(`/chat-customizations/${selectedChat}`);
+                      const res = await api.get(
+                        `/chat-customizations/${selectedChat}`
+                      );
                       setNickname(res.data.nickname || "");
                     } catch (error) {
                       // Fallback về localStorage nếu API lỗi
@@ -464,10 +500,20 @@ export default function ChatCustomizeModal({
                 }`}
               >
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <span className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>Aa</span>
+                  <span
+                    className={`text-lg font-semibold ${
+                      isDark ? "text-white" : "text-gray-900"
+                    }`}
+                  >
+                    Aa
+                  </span>
                 </div>
                 <span className="flex-1 text-left">Biệt danh</span>
-                <ChevronRight className={`w-5 h-5 ${isDark ? "text-gray-400" : "text-gray-400"}`} />
+                <ChevronRight
+                  className={`w-5 h-5 ${
+                    isDark ? "text-gray-400" : "text-gray-400"
+                  }`}
+                />
               </button>
               {showNicknameEditor && (
                 <div
@@ -520,10 +566,20 @@ export default function ChatCustomizeModal({
                   }`}
                 >
                   <div className="w-8 h-8 flex items-center justify-center">
-                    <Users className={`w-5 h-5 ${isDark ? "text-white" : "text-gray-900"}`} />
+                    <Users
+                      className={`w-5 h-5 ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}
+                    />
                   </div>
-                  <span className="flex-1 text-left">Xem danh sách thành viên</span>
-                  <ChevronRight className={`w-5 h-5 ${isDark ? "text-gray-400" : "text-gray-400"}`} />
+                  <span className="flex-1 text-left">
+                    Xem danh sách thành viên
+                  </span>
+                  <ChevronRight
+                    className={`w-5 h-5 ${
+                      isDark ? "text-gray-400" : "text-gray-400"
+                    }`}
+                  />
                 </button>
                 {showMembersList && groupInfo && (
                   <div
@@ -532,26 +588,40 @@ export default function ChatCustomizeModal({
                     }`}
                   >
                     <div className="space-y-2">
-                      {groupInfo.members && groupInfo.members.map((member: any) => {
-                        const memberData = member._id ? member : { _id: member, displayName: "", username: "" };
-                        const displayName = memberData.displayName || memberData.username || "Unknown";
-                        const isAdmin = groupInfo.admin && String(groupInfo.admin) === String(memberData._id);
-                        return (
-                          <div
-                            key={memberData._id}
-                            className={`flex items-center justify-between p-2 rounded-lg ${
-                              isDark ? "bg-gray-800" : "bg-white"
-                            }`}
-                          >
-                            <span className={isDark ? "text-white" : "text-gray-900"}>
-                              {displayName}
-                              {isAdmin && (
-                                <span className="ml-2 text-xs text-blue-500">(Admin)</span>
-                              )}
-                            </span>
-                          </div>
-                        );
-                      })}
+                      {groupInfo.members &&
+                        groupInfo.members.map((member: any) => {
+                          const memberData = member._id
+                            ? member
+                            : { _id: member, displayName: "", username: "" };
+                          const displayName =
+                            memberData.displayName ||
+                            memberData.username ||
+                            "Unknown";
+                          const isAdmin =
+                            groupInfo.admin &&
+                            String(groupInfo.admin) === String(memberData._id);
+                          return (
+                            <div
+                              key={memberData._id}
+                              className={`flex items-center justify-between p-2 rounded-lg ${
+                                isDark ? "bg-gray-800" : "bg-white"
+                              }`}
+                            >
+                              <span
+                                className={
+                                  isDark ? "text-white" : "text-gray-900"
+                                }
+                              >
+                                {displayName}
+                                {isAdmin && (
+                                  <span className="ml-2 text-xs text-blue-500">
+                                    (Admin)
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                          );
+                        })}
                     </div>
                   </div>
                 )}
@@ -581,3 +651,15 @@ export default function ChatCustomizeModal({
   );
 }
 
+// Memoize component to prevent unnecessary re-renders
+export default memo(ChatCustomizeModal, (prevProps, nextProps) => {
+  // Only re-render if these props change
+  return (
+    prevProps.isOpen === nextProps.isOpen &&
+    prevProps.selectedChat === nextProps.selectedChat &&
+    prevProps.userId === nextProps.userId &&
+    prevProps.isDark === nextProps.isDark &&
+    prevProps.isGroup === nextProps.isGroup &&
+    JSON.stringify(prevProps.groupInfo) === JSON.stringify(nextProps.groupInfo)
+  );
+});
