@@ -15,7 +15,9 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true, // Sử dụng HTTPS
-  timeout: 60000, // Tăng timeout lên 60 giây
+  timeout: 120000, // Tăng timeout lên 120 giây
+  socket_timeout: 120000, // Timeout cho socket connection
+  keepAlive: true, // Giữ connection alive
 });
 
 // Debug log để kiểm tra (có thể bỏ sau khi fix xong)

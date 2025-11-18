@@ -2,7 +2,7 @@ import cloudinary from "../libs/cloudinary.js";
 import fs from "fs";
 import { promises as fsPromises } from "fs";
 
-// Upload ảnh
+// Upload ảnh với retry logic
 export const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
@@ -13,16 +13,45 @@ export const uploadImage = async (req, res) => {
     console.log("📂 File path:", req.file.path);
     console.log("📏 File size:", req.file.size, "bytes");
 
-    // Upload file tạm thời từ multer lên Cloudinary với các options tối ưu
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "chat_app/images",
-      resource_type: "image",
-      timeout: 60000, // 60 giây timeout
-      chunk_size: 6000000, // 6MB chunks để tránh timeout
-      transformation: [
-        { quality: "auto", fetch_format: "auto" } // Tự động tối ưu chất lượng và format
-      ]
-    });
+    // Retry logic với exponential backoff
+    let result;
+    let retries = 3;
+    let lastError;
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        console.log(`🔄 Thử upload lần ${i + 1}/${retries}...`);
+        
+        // Upload file tạm thời từ multer lên Cloudinary với các options tối ưu
+        result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "chat_app/images",
+          resource_type: "image",
+          timeout: 120000, // 120 giây timeout
+          chunk_size: 6000000, // 6MB chunks để tránh timeout
+          transformation: [
+            { quality: "auto", fetch_format: "auto" } // Tự động tối ưu chất lượng và format
+          ]
+        });
+        
+        // Nếu thành công, break khỏi loop
+        break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`⚠️ Upload lần ${i + 1} thất bại:`, err.message);
+        
+        // Nếu còn retry, đợi trước khi thử lại
+        if (i < retries - 1) {
+          const waitTime = Math.pow(2, i) * 1000; // Exponential backoff: 1s, 2s, 4s
+          console.log(`⏳ Đợi ${waitTime / 1000}s trước khi thử lại...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
+    }
+
+    // Nếu sau tất cả retries vẫn thất bại
+    if (!result) {
+      throw lastError || new Error("Upload thất bại sau nhiều lần thử");
+    }
 
     // Xóa file tạm sau khi upload thành công
     try {
