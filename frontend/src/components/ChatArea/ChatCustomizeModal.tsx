@@ -142,94 +142,47 @@ function ChatCustomizeModal({
   };
 
   const handleNicknameSave = async () => {
-    if (!selectedChat || !userId) return;
+    if (!selectedChat || !userId || !isGroup) return;
 
     try {
-      if (isGroup) {
-        // Đổi tên nhóm
-        if (nickname.trim()) {
-          const response = await api.put(
-            `/chat-customizations/${selectedChat}`,
-            {
-              nickname: nickname.trim(),
-              isGroup: true,
-            }
-          );
-
-          // Refresh group info từ response hoặc fetch lại
-          if (response.data?.group) {
-            window.dispatchEvent(
-              new CustomEvent("groupUpdated", { detail: response.data.group })
-            );
-          } else {
-            // Nếu không có trong response, fetch lại
-            try {
-              const groupRes = await api.get(`/groups/${selectedChat}`);
-              window.dispatchEvent(
-                new CustomEvent("groupUpdated", { detail: groupRes.data })
-              );
-            } catch (fetchErr) {
-              console.error("Lỗi fetch group info:", fetchErr);
-            }
-          }
-
-          // Refresh groups list trong sidebar
-          window.dispatchEvent(new CustomEvent("refreshGroups"));
-          toast.success(`Đã đổi tên nhóm thành: ${nickname.trim()}`, {
-            description: "Tên nhóm đã được cập nhật thành công",
-          });
-        }
-      } else {
-        // Biệt danh cho chat cá nhân
-        if (nickname.trim()) {
-          await api.put(`/chat-customizations/${selectedChat}`, {
+      // Đổi tên nhóm
+      if (nickname.trim()) {
+        const response = await api.put(
+          `/chat-customizations/${selectedChat}`,
+          {
             nickname: nickname.trim(),
-            isGroup: false,
-          });
+            isGroup: true,
+          }
+        );
 
-          const key = `chat_nickname_${selectedChat}`;
-          localStorage.setItem(key, nickname.trim());
-
+        // Refresh group info từ response hoặc fetch lại
+        if (response.data?.group) {
           window.dispatchEvent(
-            new CustomEvent("chatCustomizationChanged", {
-              detail: {
-                chatId: selectedChat,
-                type: "nickname",
-                value: nickname.trim(),
-              },
-            })
+            new CustomEvent("groupUpdated", { detail: response.data.group })
           );
-          toast.success(`Đã lưu biệt danh: ${nickname.trim()}`, {
-            description: "Biệt danh đã được lưu thành công",
-          });
         } else {
-          await api.put(`/chat-customizations/${selectedChat}`, {
-            nickname: null,
-            isGroup: false,
-          });
-
-          const key = `chat_nickname_${selectedChat}`;
-          localStorage.removeItem(key);
-
-          window.dispatchEvent(
-            new CustomEvent("chatCustomizationChanged", {
-              detail: {
-                chatId: selectedChat,
-                type: "nickname",
-                value: null,
-              },
-            })
-          );
-          toast.success("Đã xóa biệt danh", {
-            description: "Biệt danh đã được xóa thành công",
-          });
+          // Nếu không có trong response, fetch lại
+          try {
+            const groupRes = await api.get(`/groups/${selectedChat}`);
+            window.dispatchEvent(
+              new CustomEvent("groupUpdated", { detail: groupRes.data })
+            );
+          } catch (fetchErr) {
+            console.error("Lỗi fetch group info:", fetchErr);
+          }
         }
+
+        // Refresh groups list trong sidebar
+        window.dispatchEvent(new CustomEvent("refreshGroups"));
+        toast.success(`Đã đổi tên nhóm thành: ${nickname.trim()}`, {
+          description: "Tên nhóm đã được cập nhật thành công",
+        });
       }
 
       setShowNicknameEditor(false);
       setNickname("");
     } catch (error: any) {
-      console.error("Lỗi cập nhật nickname:", error);
+      console.error("Lỗi cập nhật tên nhóm:", error);
       toast.error("Lỗi cập nhật", {
         description: error.response?.data?.message || error.message,
       });
@@ -326,7 +279,9 @@ function ChatCustomizeModal({
               onClick={() => {
                 setShowThemePicker(!showThemePicker);
                 setShowQuickReactionPicker(false);
-                setShowNicknameEditor(false);
+                if (isGroup) {
+                  setShowNicknameEditor(false);
+                }
               }}
               className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
                   ? "hover:bg-gray-700 text-white"
@@ -367,7 +322,9 @@ function ChatCustomizeModal({
               onClick={() => {
                 setShowQuickReactionPicker(!showQuickReactionPicker);
                 setShowThemePicker(false);
-                setShowNicknameEditor(false);
+                if (isGroup) {
+                  setShowNicknameEditor(false);
+                }
               }}
               className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
                   ? "hover:bg-gray-700 text-white"
@@ -399,8 +356,8 @@ function ChatCustomizeModal({
             )}
           </div>
 
-          {/* Chỉnh sửa biệt danh / Đặt tên nhóm */}
-          {isGroup ? (
+          {/* Đặt tên nhóm (chỉ hiển thị cho nhóm) */}
+          {isGroup && (
             <div className="mb-1">
               <button
                 onClick={async () => {
@@ -444,76 +401,6 @@ function ChatCustomizeModal({
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
                     placeholder="Nhập tên nhóm..."
-                    className={`w-full px-3 py-2 rounded-lg border ${isDark
-                        ? "bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  />
-                  <button
-                    onClick={handleNicknameSave}
-                    className={`mt-2 w-full px-4 py-2 rounded-lg ${isDark
-                        ? "bg-blue-600 hover:bg-blue-700 text-white"
-                        : "bg-blue-500 hover:bg-blue-600 text-white"
-                      } transition-colors`}
-                  >
-                    Lưu
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="mb-1">
-              <button
-                onClick={async () => {
-                  setShowNicknameEditor(!showNicknameEditor);
-                  setShowThemePicker(false);
-                  setShowQuickReactionPicker(false);
-                  // Load existing nickname từ database
-                  if (selectedChat && userId) {
-                    try {
-                      const res = await api.get(
-                        `/chat-customizations/${selectedChat}`
-                      );
-                      setNickname(res.data.nickname || "");
-                    } catch (error) {
-                      // Fallback về localStorage nếu API lỗi
-                      const key = `chat_nickname_${selectedChat}`;
-                      const existing = localStorage.getItem(key);
-                      setNickname(existing || "");
-                    }
-                  }
-                }}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${isDark
-                    ? "hover:bg-gray-700 text-white"
-                    : "hover:bg-gray-100 text-gray-900"
-                  }`}
-              >
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <span
-                    className={`text-lg font-semibold ${
-                      isDark ? "text-white" : "text-gray-900"
-                    }`}
-                  >
-                    Aa
-                  </span>
-                </div>
-                <span className="flex-1 text-left">Biệt danh</span>
-                <ChevronRight
-                  className={`w-5 h-5 ${
-                    isDark ? "text-gray-400" : "text-gray-400"
-                  }`}
-                />
-              </button>
-              {showNicknameEditor && (
-                <div
-                  className={`mt-2 p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-50"
-                    }`}
-                >
-                  <input
-                    type="text"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    placeholder="Nhập biệt danh..."
                     className={`w-full px-3 py-2 rounded-lg border ${isDark
                         ? "bg-gray-800 border-gray-600 text-white placeholder-gray-400"
                         : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"

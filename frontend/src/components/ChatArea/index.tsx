@@ -48,7 +48,6 @@ export default function ChatArea({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
   const [inCall, setInCall] = useState(false);
-  const [chatNickname, setChatNickname] = useState<string | null>(null);
   const [chatTheme, setChatTheme] = useState<string | null>(null);
   const [chatQuickReaction, setChatQuickReaction] = useState<string>("👍"); // Emoji mặc định là 👍
   // const [incomingCall, setIncomingCall] = useState<any | null>(null);
@@ -136,16 +135,6 @@ export default function ChatArea({
               }
             }
 
-            // Load nickname
-            if (customization.nickname) {
-              setChatNickname(customization.nickname);
-              const nicknameKey = `chat_nickname_${selectedChat}`;
-              localStorage.setItem(nicknameKey, customization.nickname);
-            } else {
-              const nicknameKey = `chat_nickname_${selectedChat}`;
-              const savedNickname = localStorage.getItem(nicknameKey);
-              setChatNickname(savedNickname || null);
-            }
           } catch (err) {
             console.error("Lỗi load customization:", err);
             // Fallback về localStorage nếu API lỗi
@@ -1092,15 +1081,11 @@ export default function ChatArea({
     };
   }, [selectedChat, isGroup]);
 
-  // Listen for customization changes (when nickname/theme/quickReaction is saved)
+  // Listen for customization changes (when theme/quickReaction is saved)
   useEffect(() => {
     const handleCustomizationChange = (e: CustomEvent) => {
       if (!selectedChat || e.detail.chatId !== selectedChat) return;
 
-      if (e.detail.type === "nickname") {
-        setChatNickname(e.detail.value);
-        console.log("Nickname updated:", e.detail.value);
-      }
       if (e.detail.type === "theme") {
         setChatTheme(e.detail.value);
         console.log("Theme updated:", e.detail.value);
@@ -1129,7 +1114,7 @@ export default function ChatArea({
 
     const handleSocketCustomizationChange = (data: {
       chatId: string;
-      type: "nickname" | "theme" | "quickReaction";
+      type: "theme" | "quickReaction";
       value: any;
       isGroup?: boolean;
     }) => {
@@ -1138,16 +1123,7 @@ export default function ChatArea({
 
       console.log("📡 Socket customization changed:", data);
 
-      if (data.type === "nickname") {
-        setChatNickname(data.value);
-        // Cập nhật localStorage
-        const key = `chat_nickname_${selectedChat}`;
-        if (data.value) {
-          localStorage.setItem(key, data.value);
-        } else {
-          localStorage.removeItem(key);
-        }
-      } else if (data.type === "theme") {
+      if (data.type === "theme") {
         setChatTheme(data.value);
         // Cập nhật localStorage
         const key = `chat_theme_${selectedChat}`;
@@ -1452,8 +1428,7 @@ export default function ChatArea({
             <h2 className="font-semibold flex items-center gap-2">
               {isGroup
                 ? groupInfo?.name
-                : chatNickname ||
-                  friendInfo?.displayName ||
+                : friendInfo?.displayName ||
                   friendInfo?.username ||
                   "Đang tải..."}
             </h2>
